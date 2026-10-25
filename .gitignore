@@ -1,0 +1,18 @@
+.venv/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+instance/
+*.sqlite3
+tmp/
+_audit*.mjs
+_debug*.mjs
+
+# Generated files are excluded except for the current Round 2 reviewer report.
+output/*
+!output/pdf/
+output/pdf/*
+!output/pdf/Lekhani_Round_2_Audit_Report_2026-10-25.pdf
