@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='welcome.css') }}">
+{% endblock %}
+{% block content %}
+<div class="lek-welcome">
+  <div class="lek-glow lek-glow-a" aria-hidden="true"></div>
+  <div class="lek-glow lek-glow-b" aria-hidden="true"></div>
+
+  <div class="lek-layout">
+    <section class="lek-story" aria-labelledby="lek-headline">
+      <p class="lek-wordmark">
+        <span class="lek-wordmark-name">Lekhani</span>
+        <span class="lek-wordmark-script" lang="sa">लेखनी</span>
+      </p>
+
+      <h1 class="lek-headline" id="lek-headline">Words carry trust.<br>Review them with care.</h1>
+
+      <p class="lek-description">Named after the Sanskrit word for ‘pen,’ Lekhani brings
+         responsible review to digital communication.</p>
+
+      <p class="lek-supporting">Every issue cites a rule. Every decision stays human.</p>
+
+      <svg class="lek-stroke" viewBox="0 0 340 20" aria-hidden="true" focusable="false">
+        <path d="M4 14 C 72 5, 176 3, 336 11" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </section>
+
+    <section class="lek-card" aria-labelledby="lek-card-title">
+      <h2 class="lek-card-title" id="lek-card-title">Welcome to Lekhani</h2>
+      <p class="lek-card-note">Guest preview — not a sign-in. Your name stays in this
+         browser session and is never saved.</p>
+
+      <form method="post" action="{{ url_for('guest.login') }}" id="lek-form" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="lek-field">
+          <label class="lek-label" for="lek-name">Your name</label>
+          <input class="lek-input" type="text" id="lek-name" name="name" maxlength="60"
+                 autocomplete="name" placeholder="Enter your name" required
+                 aria-describedby="lek-name-hint">
+          <p class="lek-hint" id="lek-name-hint">Used only to greet you. Nothing is stored.</p>
+          <p class="lek-error" id="lek-name-error" role="alert" hidden>Enter your name to continue.</p>
+        </div>
+
+        <div class="lek-slide" id="lek-slide">
+          <div class="lek-track" id="lek-track">
+            <span class="lek-trail" id="lek-trail" aria-hidden="true"></span>
+            <span class="lek-slide-text" id="lek-slide-text" aria-hidden="true">Slide to enter</span>
+            <button type="button" class="lek-handle" id="lek-handle"
+                    role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                    aria-label="Slide to enter. Drag the pen nib to the end of the track."
+                    aria-describedby="lek-slide-help">
+              <svg class="lek-nib" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path class="lek-nib-body" d="M12 2.6 17 9.5 14.6 19 12 21.4 9.4 19 7 9.5Z"/>
+                <circle class="lek-nib-vent" cx="12" cy="13.4" r="1.7"/>
+                <path class="lek-nib-slit" d="M12 15.1V21.3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="lek-help" id="lek-slide-help">Drag the nib to the end of the track, or use
+             the button below.</p>
+        </div>
+
+        <p class="lek-status" id="lek-status" role="status" aria-live="polite"></p>
+
+        <button type="submit" class="lek-alt" id="lek-alt">Continue without sliding</button>
+        <noscript>
+          <p class="lek-note">The slide control needs JavaScript. The button above still works.</p>
+        </noscript>
+      </form>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var form = document.getElementById("lek-form");
+  if (!form) { return; }
+
+  var nameInput = document.getElementById("lek-name");
+  var errorEl = document.getElementById("lek-name-error");
+  var track = document.getElementById("lek-track");
+  var trail = document.getElementById("lek-trail");
+  var handle = document.getElementById("lek-handle");
+  var slideText = document.getElementById("lek-slide-text");
+  var status = document.getElementById("lek-status");
+  var alt = document.getElementById("lek-alt");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  var dragging = false;
+  var startX = 0;
+  var offset = 0;
+  var maxX = 0;
+  var completed = false;
+  var submitting = false;
+  var finishTimer = null;
+
+  function measure() {
+    maxX = Math.max(0, track.clientWidth - handle.offsetWidth - 8);
+    return maxX;
+  }
+
+  function setOffset(x, animate) {
+    if (maxX <= 0) { measure(); }
+    offset = Math.min(Math.max(0, x), maxX);
+    handle.style.transition = (animate && !reduceMotion.matches)
+      ? "transform 0.22s ease" : "none";
+    handle.style.transform = "translateX(" + offset + "px)";
+    trail.style.width = (offset + handle.offsetWidth / 2) + "px";
+    var percent = maxX > 0 ? Math.round((offset / maxX) * 100) : 0;
+    handle.setAttribute("aria-valuenow", String(percent));
+    slideText.style.opacity = percent > 30 ? "0" : "1";
+  }
+
+  function reset(animate) {
+    setOffset(0, animate !== false);
+  }
+
+  function nameValue() {
+    return nameInput ? nameInput.value.trim() : "";
+  }
+
+  function showError(show) {
+    if (!errorEl) { return; }
+    errorEl.hidden = !show;
+    if (show && nameInput) { nameInput.focus(); }
+  }
+
+  function complete() {
+    if (completed || submitting) { return; }
+    var value = nameValue();
+    if (!value) {
+      showError(true);
+      reset();
+      return;
+    }
+    showError(false);
+    completed = true;
+    setOffset(maxX, true);
+    if (status) { status.textContent = "Welcome, " + value; }
+    if (handle) { handle.setAttribute("aria-disabled", "true"); }
+    if (nameInput) { nameInput.readOnly = true; }
+    if (alt) { alt.disabled = true; }
+    var wait = reduceMotion.matches ? 250 : 850;
+    finishTimer = window.setTimeout(function () {
+      submitting = true;
+      form.submit();  /* normal POST to the existing guest entry route */
+    }, wait);
+  }
+
+  function endDrag() {
+    if (!dragging) { return; }
+    dragging = false;
+    if (maxX > 0 && offset >= maxX - 2) {
+      complete();
+    } else {
+      reset();
+    }
+  }
+
+  if (handle) {
+    handle.addEventListener("pointerdown", function (event) {
+      if (completed) { return; }
+      dragging = true;
+      measure();
+      startX = event.clientX - offset;
+      try { handle.setPointerCapture(event.pointerId); } catch (err) { /* ignore */ }
+      handle.style.transition = "none";
+      event.preventDefault();
+    });
+
+    handle.addEventListener("pointermove", function (event) {
+      if (!dragging) { return; }
+      setOffset(event.clientX - startX, false);
+      event.preventDefault();
+    });
+
+    handle.addEventListener("pointerup", endDrag);
+    handle.addEventListener("pointercancel", endDrag);
+
+    handle.addEventListener("keydown", function (event) {
+      if (completed) { return; }
+      var step = Math.max(24, maxX / 10);
+      if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+        event.preventDefault();
+        setOffset(offset + step, true);
+        if (maxX > 0 && offset >= maxX) { complete(); }
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+        event.preventDefault();
+        setOffset(offset - step, true);
+      } else if (event.key === "End") {
+        event.preventDefault();
+        complete();
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        reset();
+      } else if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        complete();
+      }
+    });
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener("input", function () {
+      if (nameInput.value.trim()) { showError(false); }
+    });
+  }
+
+  form.addEventListener("submit", function (event) {
+    if (submitting) {
+      event.preventDefault();
+      return;
+    }
+    if (!nameValue()) {
+      event.preventDefault();
+      showError(true);
+      return;
+    }
+    submitting = true;  /* native submit (Enter or the alternative button) */
+  });
+
+  window.addEventListener("resize", function () {
+    measure();
+    setOffset(offset, false);
+  });
+
+  window.addEventListener("load", function () {
+    measure();
+    reset(false);
+  });
+  measure();
+  reset(false);
+})();
+</script>
+{% endblock %}

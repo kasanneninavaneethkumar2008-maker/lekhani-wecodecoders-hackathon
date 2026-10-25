@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Guest home{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Guest · {{ role }}</p>
+    <h1>Welcome back, {{ name }}</h1>
+    <p class="lead">You're previewing Lekhani as a <strong>{{ role }}</strong>.
+       This is a look-around only — nothing you do here is saved.</p>
+  </div>
+  <p class="page-actions">
+    <button type="button" class="button welcome-soon" disabled aria-disabled="true"
+            title="Coming soon">Google sign-in — Coming soon</button>
+  </p>
+</div>
+
+<ul class="feature-cards feature-cards-flat">
+  <li class="feature-card">
+    <p class="feature-num" aria-hidden="true">01</p>
+    <div>
+      <h2>Rule-backed checks</h2>
+      <p>Glossary terminology, required or forbidden messaging, and possible
+         promotional claims are checked against the approved rule table — not
+         guessed at.</p>
+    </div>
+    <p class="feature-foot">Every issue cites a stable rule ID and quotes the clause exactly.</p>
+  </li>
+  <li class="feature-card">
+    <p class="feature-num" aria-hidden="true">02</p>
+    <div>
+      <h2>Human review</h2>
+      <p>A person reads the submitted draft with its latest check results and
+         records Approved or Needs changes, with an optional comment.</p>
+    </div>
+    <p class="feature-foot">The decision, the reviewer, and the time are all recorded.</p>
+  </li>
+  <li class="feature-card">
+    <p class="feature-num" aria-hidden="true">03</p>
+    <div>
+      <h2>No automated publishing</h2>
+      <p>Lekhani never rewrites text, approves on its own, or publishes
+         anywhere. Text is typed or pasted into the form; there are no uploads.</p>
+    </div>
+    <p class="feature-foot">The app's own pages are the only output.</p>
+  </li>
+</ul>
+
+<div class="guest-cta" role="group" aria-label="Draft shortcuts">
+  <a class="button button-primary guest-cta-btn" href="{{ url_for('guest.new_draft') }}">New Draft</a>
+  <a class="button guest-cta-btn" href="{{ url_for('guest.old_drafts') }}">Old Drafts</a>
+</div>
+
+{% if role == 'reviewer' %}
+<p class="notice"><strong>Reviewing as a guest:</strong> you can read this
+   preview, but recording a decision (Approved or Needs changes) needs a
+   signed-in account. Google sign-in — coming soon — will be required before
+   any review decision can be saved.</p>
+{% else %}
+<p class="notice"><strong>Creating as a guest:</strong> drafts can't be created
+   or saved from a guest session. Google sign-in — coming soon — will be
+   required before any draft is written, saved, or listed.</p>
+{% endif %}
+{% endblock %}

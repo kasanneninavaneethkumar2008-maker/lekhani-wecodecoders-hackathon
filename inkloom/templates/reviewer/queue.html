@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Review queue{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Reviewer workspace</p>
+    <h1>Review queue</h1>
+  </div>
+</div>
+
+<section class="panel" aria-labelledby="waiting-heading">
+  <h2 id="waiting-heading">Waiting for a decision ({{ submitted|length }})</h2>
+  {% if submitted %}
+  <ul class="card-list">
+    {% for draft in submitted %}
+    <li>
+      <a href="{{ url_for('reviewer.review_draft', draft_id=draft['id']) }}">{{ draft['title'] }}</a>
+      <p class="muted card-meta">by {{ draft['author_name'] }} · {{ draft['content_type'] }}
+      · audience: {{ draft['audience'] }} · submitted {{ draft['updated_at'] }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="note">Nothing is waiting for a decision.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="decided-heading">
+  <h2 id="decided-heading">Recently decided</h2>
+  {% if recently_decided %}
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Recently decided drafts</caption>
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Author</th>
+          <th scope="col">Decision</th>
+          <th scope="col">Reviewer</th>
+          <th scope="col">Decided (UTC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for draft in recently_decided %}
+        <tr>
+          <td><a href="{{ url_for('reviewer.review_draft', draft_id=draft['id']) }}">{{ draft['title'] }}</a></td>
+          <td>{{ draft['author_name'] }}</td>
+          <td>{{ decisions[draft['decision']] }}</td>
+          <td>{{ draft['reviewer_name'] }}</td>
+          <td>{{ draft['decided_at'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="note">No decisions have been recorded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

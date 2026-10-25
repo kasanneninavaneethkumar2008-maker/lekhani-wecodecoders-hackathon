@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Choose a role{% endblock %}
+{% block content %}
+<section class="role-stage" aria-labelledby="role-title">
+  <p class="eyebrow">Guest preview</p>
+  <h1 id="role-title">Welcome back, {{ name }}</h1>
+  <p class="lead">Pick a role to explore — nothing you do here is saved.</p>
+
+  <div class="stage-inner">
+    <form method="post" class="role-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <p class="choice-row choice-row-center">
+        <button type="submit" name="role" value="creator"
+                class="button button-primary role-btn role-btn-creator">Continue as Creator</button>
+        <button type="submit" name="role" value="reviewer"
+                class="button role-btn role-btn-reviewer">Continue as Reviewer</button>
+      </p>
+    </form>
+  </div>
+
+  <p class="notice">Guest sessions are temporary: your name and role choice live
+     only in this browser session. Nothing is saved to the database, and no
+     drafts or review decisions can be created until Google sign-in arrives.</p>
+
+  <p class="page-actions"><a class="back-link" href="{{ url_for('index') }}">Back to welcome</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "site_base.html" %}
+{% block title %}Review summary{% endblock %}
+{% block content %}
+{% set coverage_total = (result.coverage.terminology|length + result.coverage.messaging|length
+                         + result.coverage.claim_patterns|length) %}
+<div class="page print-page">
+  <header class="print-head">
+    <p class="print-brand">Lekhani <span lang="sa">लेखनी</span></p>
+    <h1>{{ values.title or "Untitled draft" }}</h1>
+    <p class="print-status">Guest demo summary · Guest name: {{ guest_name }} ·
+       Guest identity is not verified. This summary is not an authenticated approval,
+       signed certificate, or legal compliance record.</p>
+  </header>
+
+  <section aria-labelledby="print-draft-heading">
+    <h2 id="print-draft-heading">Draft</h2>
+    <dl class="meta-list">
+      <div><dt>Content type</dt><dd>{{ values.content_type|capitalize }}</dd></div>
+      <div><dt>Audience</dt><dd>{{ values.audience or "Not supplied" }}</dd></div>
+      <div><dt>Rule set</dt>
+        <dd>{{ rule_set_name }} · {{ rule_set_detail }} · {{ result.rule_set_id }} ·
+            {{ result.rule_set_version }}</dd></div>
+      <div><dt>Check</dt>
+        <dd>Run at {{ checked_at }} ({{ check_source }}). The findings below belong to this
+            checked snapshot of the draft.</dd></div>
+    </dl>
+    <div class="print-draft">{{ values.body }}</div>
+  </section>
+
+  <section aria-labelledby="print-findings-heading">
+    <h2 id="print-findings-heading">Findings</h2>
+    {% if not result.complete %}
+    <p class="print-warning"><strong>This check was incomplete.</strong> Do not read this
+       summary as a clean result. Some candidate findings failed citation validation.</p>
+    <ul class="print-warning">
+      {% for warning in result.warnings %}<li>{{ warning }}</li>{% endfor %}
+      {% for reason in result.rejection_reasons %}<li>{{ reason }}</li>{% endfor %}
+      <li>{{ result.rejected|length }} rejected candidate finding(s) are not shown as issues.</li>
+    </ul>
+    {% elif not result.issues and coverage_total == 0 %}
+    <p><strong>No applicable rules exist for this content type.</strong> Nothing was checked
+       against a rule, so this is not an all-clear.</p>
+    {% elif not result.issues %}
+    <p>No issues were detected by the configured checks. This does not establish factual
+       correctness or legal compliance.</p>
+    {% else %}
+    <ol class="finding-list">
+      {% for finding in result.issues %}
+      <li class="finding">
+        <div class="finding-head">
+          <span class="rule-chip">{{ finding.rule_id }}</span>
+          <span class="finding-kind">{{ finding.kind|capitalize }}</span>
+          {% if finding.is_claim %}<span class="finding-prompt">Human review requested</span>{% endif %}
+        </div>
+        <p>{{ finding.title or finding.message }}</p>
+        {% if finding.excerpt %}
+        <p><span class="label">Affected text</span> “{{ finding.excerpt }}”</p>
+        {% else %}
+        <p><span class="label">Required phrase not found</span> No offending text span exists.</p>
+        {% endif %}
+        <blockquote class="finding-quote">{{ finding.quote }}</blockquote>
+        <p class="print-cite">Rule reference validated: identifier, quotation, and version
+           match {{ finding.rule_set_id }} · {{ finding.rule_set_version }}.</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="print-review-heading">
+    <h2 id="print-review-heading">Guest review status</h2>
+    {% if review %}
+    <p><strong>{{ "Needs changes — demo" if review.outcome == "changes" else "Approved — demo" }}</strong>
+       · recorded {{ review.recorded_at }} by {{ review.guest_name }}.</p>
+    {% if review.note %}<p class="print-note">{{ review.note }}</p>{% endif %}
+    <p>Guest review demonstration. Identity is not verified. This is not an authored
+       organisational approval and nothing was published.</p>
+    {% elif review_outdated %}
+    <p class="print-warning"><strong>A guest review was recorded earlier but is outdated.</strong>
+       It does not apply to the content in this summary and its outcome is not shown as current.</p>
+    {% else %}
+    <p>No current guest review is attached to this checked snapshot.</p>
+    {% endif %}
+  </section>
+
+  {% if values.notes %}
+  <section aria-labelledby="print-notes-heading">
+    <h2 id="print-notes-heading">Guest review note — identity not verified</h2>
+    <p class="print-note">{{ values.notes }}</p>
+  </section>
+  {% endif %}
+
+  <section aria-labelledby="print-coverage-heading">
+    <h2 id="print-coverage-heading">Check coverage</h2>
+    <ul>
+      <li>{{ result.coverage.terminology|length }} applicable terminology rules evaluated.</li>
+      <li>{{ result.coverage.messaging|length }} applicable messaging rules evaluated.</li>
+      <li>{{ result.coverage.claim_patterns|length }} claim-trigger patterns evaluated.</li>
+      <li>{{ result.rejected|length }} candidate findings rejected by reference validation.</li>
+      <li>Active rule-set version: {{ result.rule_set_id }} · {{ result.rule_set_version }}.</li>
+    </ul>
+    {% if coverage_total == 0 %}
+    <p class="print-warning">No applicable rules exist for this content type. This is not a
+       comprehensive check and must not be read as an all-clear.</p>
+    {% endif %}
+    <h3>Not determined by this check</h3>
+    <ul>
+      <li>Whether every factual claim is true.</li>
+      <li>Legal compliance.</li>
+      <li>Visual brand consistency.</li>
+      <li>Full accessibility.</li>
+      <li>Tone beyond the implemented rules.</li>
+    </ul>
+    <p>Guest/demo status: this summary is not an authenticated approval, signed certificate,
+       or legal compliance record. {{ rule_set_name }} are fictional and are not an
+       organisation-approved policy.</p>
+  </section>
+
+  <div class="print-controls">
+    <button class="button button-primary" type="button" data-print-now>Print</button>
+    <a class="button button-secondary" href="{{ url_for('site.workspace') }}">Back to workspace</a>
+  </div>
+</div>
+{% endblock %}

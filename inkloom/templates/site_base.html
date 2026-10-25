@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='lek.css') }}">
+<script src="{{ url_for('static', filename='lek.js') }}" defer></script>
+{% endblock %}
+{% block site_header %}
+{% set guest = session.get('guest_name', '') %}
+{% set nav_items = [
+  ('site.home', 'Home'),
+  ('site.about', 'About'),
+  ('site.contact', 'Contact'),
+  ('site.report_issue', 'Report an issue'),
+  ('site.trust_lab', 'Trust Lab')
+] %}
+<header class="app-header" data-app-header>
+  <div class="header-inner">
+    <a class="brand-lockup" href="{{ url_for('site.home') }}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 2.6 17 9.5 14.6 19 12 21.4 9.4 19 7 9.5Z" fill="currentColor"/>
+          <circle cx="12" cy="13.4" r="1.7" fill="#ffffff"/>
+          <path d="M12 15.1V21.3" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-words">
+        <span class="brand-name">Lekhani</span>
+        <span class="brand-script" lang="sa">लेखनी</span>
+      </span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false"
+            aria-controls="primary-nav" data-nav-toggle>
+      <span class="nav-toggle-bars" aria-hidden="true"></span>
+      Menu
+    </button>
+
+    <nav class="primary-nav" id="primary-nav" aria-label="Primary" data-nav>
+      <ul class="nav-links">
+        {% for endpoint, label in nav_items %}
+        <li>
+          <a href="{{ url_for(endpoint) }}"
+             {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a>
+        </li>
+        {% endfor %}
+        <li class="nav-motion">
+          <button class="motion-toggle" type="button" data-reduce-motion aria-pressed="false">
+            Reduce motion
+          </button>
+        </li>
+      </ul>
+
+      <div class="nav-guest">
+        <span class="guest-avatar" aria-hidden="true">{{ guest[:1]|upper }}</span>
+        <span class="nav-guest-text">
+          <span class="guest-name" title="{{ guest }}">{{ guest }}</span>
+          <span class="guest-label">Guest workspace</span>
+        </span>
+        <a class="nav-leave" href="{{ url_for('guest.logout') }}">Leave workspace</a>
+      </div>
+    </nav>
+
+    <details class="guest-menu" data-guest-menu>
+      <summary class="guest-summary">
+        <span class="guest-avatar" aria-hidden="true">{{ guest[:1]|upper }}</span>
+        <span class="guest-name" title="{{ guest }}">{{ guest }}</span>
+        <span class="chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="guest-menu-panel">
+        <p class="guest-label">Guest workspace</p>
+        <a class="guest-menu-leave" href="{{ url_for('guest.logout') }}">Leave workspace</a>
+      </div>
+    </details>
+  </div>
+</header>
+{% endblock %}
+{% block site_footer %}
+<footer class="app-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-name">Lekhani</span>
+      <span class="footer-script" lang="sa">लेखनी</span>
+      <p class="footer-line">Rooted in language. Guided by evidence.</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="{{ url_for('site.about') }}">About</a>
+      <a href="{{ url_for('site.contact') }}">Contact</a>
+      <a href="{{ url_for('site.report_issue') }}">Report an issue</a>
+    </nav>
+  </div>
+  <div class="footer-notices">
+    <p>Guest demo. Do not enter confidential information.</p>
+    <p>Checks support human review. They do not certify legal compliance.</p>
+  </div>
+</footer>
+{% endblock %}

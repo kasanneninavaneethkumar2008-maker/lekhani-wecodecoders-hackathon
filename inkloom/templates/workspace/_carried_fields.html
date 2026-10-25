@@ -1,0 +1,26 @@
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="rule_mode" value="{{ values.rule_mode }}">
+{% if carried_snapshot %}
+<input type="hidden" name="check_fingerprint" value="{{ carried_snapshot.fingerprint }}">
+<input type="hidden" name="check_content_type" value="{{ carried_snapshot.content_type }}">
+<input type="hidden" name="check_audience" value="{{ carried_snapshot.audience }}">
+<input type="hidden" name="check_rule_set_id" value="{{ carried_snapshot.rule_set_id }}">
+<input type="hidden" name="check_rule_set_version" value="{{ carried_snapshot.rule_set_version }}">
+<input type="hidden" name="check_checked_at" value="{{ carried_snapshot.checked_at }}">
+<input type="hidden" name="check_complete" value="{{ '1' if carried_snapshot.complete else '0' }}">
+<input type="hidden" name="check_finding_count" value="{{ carried_snapshot.finding_count }}">
+<input type="hidden" name="check_rejected_count" value="{{ carried_snapshot.rejected_count }}">
+<input type="hidden" name="check_source" value="{{ carried_snapshot.source }}">
+{% endif %}
+{% if review %}
+<input type="hidden" name="review_outcome" value="{{ review.outcome }}">
+<input type="hidden" name="review_note" value="{{ review.note }}">
+<input type="hidden" name="review_recorded_at" value="{{ review.recorded_at }}">
+<input type="hidden" name="review_guest_name" value="{{ review.guest_name }}">
+<input type="hidden" name="review_fingerprint" value="{{ review.fingerprint }}">
+<input type="hidden" name="review_content_type" value="{{ review.content_type }}">
+<input type="hidden" name="review_audience" value="{{ review.audience }}">
+<input type="hidden" name="review_rule_set_id" value="{{ review.rule_set_id }}">
+<input type="hidden" name="review_rule_set_version" value="{{ review.rule_set_version }}">
+<input type="hidden" name="review_check_checked_at" value="{{ review.check_checked_at }}">
+{% endif %}

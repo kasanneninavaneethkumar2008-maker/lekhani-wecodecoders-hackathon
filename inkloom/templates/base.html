@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Lekhani{% endblock %} · Lekhani</title>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="page-frame">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    {% block site_header %}
+    <header class="site-header">
+      <p class="brand">
+        <a href="{{ url_for('index') }}">Lekhani</a>
+      </p>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          {% if g.user %}
+            {% if g.user['role'] == 'creator' %}
+              <li><a href="{{ url_for('creator.draft_list') }}"
+                     {% if request.endpoint in ('creator.draft_list', 'creator.draft_detail') %}aria-current="page"{% endif %}>My drafts</a></li>
+              <li><a href="{{ url_for('creator.draft_new') }}"
+                     {% if request.endpoint == 'creator.draft_new' %}aria-current="page"{% endif %}>New draft</a></li>
+            {% else %}
+              <li><a href="{{ url_for('reviewer.queue') }}"
+                     {% if request.endpoint in ('reviewer.queue', 'reviewer.review_draft') %}aria-current="page"{% endif %}>Review queue</a></li>
+            {% endif %}
+            <li><span class="nav-user">{{ g.user['display_name'] }} ({{ g.user['role'] }})</span></li>
+            <li class="nav-switch"><a href="{{ url_for('index') }}">Switch role</a></li>
+          {% elif session.get('guest_name') %}
+            <li><span class="nav-user">Guest · {{ session['guest_name'] }}</span></li>
+            <li><a href="{{ url_for('guest.home') }}"
+                   {% if request.endpoint and request.endpoint.startswith('guest.') and request.endpoint != 'guest.login' %}aria-current="page"{% endif %}>Guest home</a></li>
+            <li class="nav-switch"><a href="{{ url_for('guest.logout') }}">Sign out</a></li>
+          {% else %}
+            <li><a href="{{ url_for('index') }}" aria-current="page">Welcome</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </header>
+    {% endblock %}
+    <main id="main" tabindex="-1">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash-list" role="status">
+            {% for category, message in messages %}
+              <li class="flash flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    {% block site_footer %}
+    <footer class="site-footer">
+      <span>Lekhani</span>
+      <span>Text-only workspace · nothing is published</span>
+    </footer>
+    {% endblock %}
+  </div>
+</body>
+</html>

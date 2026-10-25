@@ -1,0 +1,175 @@
+{% extends "site_base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="hero" aria-labelledby="home-title">
+    <div class="hero-copy">
+      <p class="hero-greeting">Welcome, {{ session.get('guest_name') }}</p>
+      <p class="badge">Guest workspace</p>
+      <h1 class="hero-title" id="home-title">Thoughtful words.<br>Confident decisions.</h1>
+      <p class="hero-text">Review your content against approved brand rules. Understand
+         each finding. Keep the final decision human.</p>
+      <p class="hero-actions">
+        <a class="button button-primary" href="{{ url_for('site.workspace') }}">Start a review <span aria-hidden="true">→</span></a>
+        <a class="button button-secondary" href="{{ url_for('site.about') }}#how-lekhani-works">See how it works</a>
+      </p>
+    </div>
+
+    <div class="hero-art">
+      <svg class="art" viewBox="0 0 560 440" role="img" aria-labelledby="art-title">
+        <title id="art-title">A pen nib with an ink path connecting three steps: Write, Check and Review</title>
+        <defs>
+          <radialGradient id="art-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ece9ff"/>
+            <stop offset="100%" stop-color="#ece9ff" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="art-ink" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3b34d6"/>
+            <stop offset="100%" stop-color="#6a5cff"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="280" cy="220" r="210" fill="url(#art-glow)"/>
+
+        <path class="art-path"
+              d="M 78 78 C 170 92, 226 132, 282 190 C 340 250, 386 300, 470 352"
+              fill="none" stroke="#d8d2ff" stroke-width="2" stroke-dasharray="5 8"/>
+        <path class="art-highlight"
+              d="M 78 78 C 170 92, 226 132, 282 190 C 340 250, 386 300, 470 352"
+              fill="none" stroke="url(#art-ink)" stroke-width="2.6"
+              stroke-linecap="round"/>
+
+        <g class="art-nib" transform="translate(76 76) rotate(38) translate(-76 -76)">
+          <path d="M76 40 L88 66 L76 96 L64 66 Z" fill="#241f8f"/>
+          <circle cx="76" cy="70" r="4.4" fill="#ffffff"/>
+          <path d="M76 74.5 V95" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+        </g>
+
+        <g class="art-node">
+          <circle cx="78" cy="78" r="12" fill="#ffffff" stroke="#3b34d6" stroke-width="2.5"/>
+          <circle cx="78" cy="78" r="4" fill="#3b34d6"/>
+          <text class="art-label" x="78" y="116" text-anchor="middle">Write</text>
+        </g>
+        <g class="art-node">
+          <circle cx="282" cy="190" r="12" fill="#ffffff" stroke="#3b34d6" stroke-width="2.5"/>
+          <circle cx="282" cy="190" r="4" fill="#3b34d6"/>
+          <text class="art-label" x="282" y="228" text-anchor="middle">Check</text>
+        </g>
+        <g class="art-node">
+          <circle cx="470" cy="352" r="12" fill="#ffffff" stroke="#3b34d6" stroke-width="2.5"/>
+          <circle cx="470" cy="352" r="4" fill="#3b34d6"/>
+          <text class="art-label" x="470" y="390" text-anchor="middle">Review</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="values" aria-labelledby="values-heading">
+    <h2 class="visually-hidden" id="values-heading">What Lekhani offers</h2>
+    <ul class="value-grid">
+      <li class="value-card">
+        <h3>Rule-backed findings</h3>
+        <p>Understand the guideline behind each finding.</p>
+      </li>
+      <li class="value-card">
+        <h3>Clear reasons</h3>
+        <p>See what needs attention and why.</p>
+      </li>
+      <li class="value-card">
+        <h3>Human decisions</h3>
+        <p>Keep approval with a person.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="next-step" aria-labelledby="next-step-heading">
+    <div class="next-step-copy">
+      <p class="eyebrow">Your next step</p>
+      <h2 id="next-step-heading">Begin with your content</h2>
+      <p>Open the workspace to write, check, and revise a draft.</p>
+    </div>
+    <p class="next-step-action">
+      <a class="button button-primary" href="{{ url_for('site.workspace') }}">Open workspace <span aria-hidden="true">→</span></a>
+    </p>
+  </section>
+
+  <section class="roadmap" id="round-3" aria-labelledby="roadmap-heading">
+    <div class="roadmap-head">
+      <div>
+        <p class="eyebrow">Coming in Round 3</p>
+        <h2 id="roadmap-heading">What comes after the guest version</h2>
+      </div>
+      <p class="roadmap-badge">Planned · Round 3</p>
+    </div>
+    <p class="roadmap-notice">These features are planned, not available in the current guest
+       version.</p>
+    <ul class="roadmap-grid">
+      <li class="roadmap-card">
+        <p class="roadmap-badge">Planned · Round 3</p>
+        <h3>Accounts &amp; saved workspaces</h3>
+        <p>Google sign-in, persistent drafts, user-specific access, and deliberate guest-work
+           import.</p>
+      </li>
+      <li class="roadmap-card">
+        <p class="roadmap-badge">Planned · Round 3</p>
+        <h3>Verified review requests</h3>
+        <p>Assigned authorised reviewers, email notifications, recorded authenticated decisions,
+           and approval invalidation.</p>
+      </li>
+      <li class="roadmap-card">
+        <p class="roadmap-badge">Planned · Round 3</p>
+        <h3>Custom &amp; versioned brand rules</h3>
+        <p>Temporary user-authored rules for draft checks, organisation-specific approved
+           rules, preserved versions, evidence expiry, and outdated-guideline identification.</p>
+      </li>
+    </ul>
+    <p class="roadmap-note">Nothing on this page connects an account, saves work, sends email,
+       or publishes content. These are commitments for a later round.</p>
+  </section>
+
+  <section class="support" aria-labelledby="support-heading">
+    <h2 class="visually-hidden" id="support-heading">More about Lekhani</h2>
+    <ul class="card-grid">
+      <li>
+        <a class="link-card" href="{{ url_for('site.about') }}">
+          <span class="link-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M5 4.5h9.5L19 9v10.5H5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M14.5 4.5V9H19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M8.2 12.5h7.6M8.2 15.8h5.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="link-card-title">About the project</span>
+          <span class="link-card-text">The thinking and principles behind Lekhani.</span>
+          <span class="link-card-cta">Read more <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+      <li>
+        <a class="link-card" href="{{ url_for('site.contact') }}">
+          <span class="link-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4 6h16v12H4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="link-card-title">Contact the team</span>
+          <span class="link-card-text">Questions, feedback, and collaboration.</span>
+          <span class="link-card-cta">Get in touch <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+      <li>
+        <a class="link-card" href="{{ url_for('site.report_issue') }}">
+          <span class="link-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M6 20V5h11l-2 3.5L17 12H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="link-card-title">Report an issue</span>
+          <span class="link-card-text">Tell us what went wrong and what you expected.</span>
+          <span class="link-card-cta">Report it <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

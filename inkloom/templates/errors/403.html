@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<section class="panel error-page">
+  <p class="eyebrow">Error 403</p>
+  <h1>403 — Not allowed</h1>
+  <p class="note">Your account does not have permission to open that page.</p>
+  <p class="page-actions">
+    <a class="button button-primary" href="{{ url_for('index') }}">Back to home</a>
+  </p>
+</section>
+{% endblock %}

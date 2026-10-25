@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Creator workspace</p>
+    <h1>{{ title }}</h1>
+  </div>
+</div>
+
+<div class="panel">
+  <form method="post" action="{{ action }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="revise">
+    <div class="form-grid">
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required aria-describedby="title-hint{% if errors.get('title') %} title-error{% endif %}"
+               value="{{ values['title'] }}">
+        {% if errors.get('title') %}<span class="field-error" id="title-error">{{ errors['title'] }}</span>{% endif %}
+        <span class="field-hint" id="title-hint">A short internal name for this draft.</span>
+      </div>
+
+      <div class="field">
+        <label for="content_type">Content type</label>
+        <select id="content_type" name="content_type" required aria-describedby="content_type-hint{% if errors.get('content_type') %} content_type-error{% endif %}">
+          <option value="">Choose a content type…</option>
+          {% for ct in content_types %}
+          <option value="{{ ct }}" {% if values['content_type'] == ct %}selected{% endif %}>{{ ct }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.get('content_type') %}<span class="field-error" id="content_type-error">{{ errors['content_type'] }}</span>{% endif %}
+        <span class="field-hint" id="content_type-hint">Required and forbidden messaging can depend on the content type.</span>
+      </div>
+
+      <div class="field field-span">
+        <label for="audience">Intended audience</label>
+        <input type="text" id="audience" name="audience" required aria-describedby="audience-hint{% if errors.get('audience') %} audience-error{% endif %}"
+               value="{{ values['audience'] }}">
+        {% if errors.get('audience') %}<span class="field-error" id="audience-error">{{ errors['audience'] }}</span>{% endif %}
+        <span class="field-hint" id="audience-hint">Who is this draft written for?</span>
+      </div>
+
+      <div class="field field-span">
+        <label for="body">Draft text</label>
+        <textarea id="body" name="body" rows="14" required aria-describedby="body-hint{% if errors.get('body') %} body-error{% endif %}">{{ values['body'] }}</textarea>
+        {% if errors.get('body') %}<span class="field-error" id="body-error">{{ errors['body'] }}</span>{% endif %}
+        <span class="field-hint" id="body-hint">Paste or type the draft. Text only — there are no uploads.</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="button button-primary">Save draft</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

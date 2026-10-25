@@ -1,0 +1,804 @@
+{% extends "site_base.html" %}
+{% block title %}Review workspace{% endblock %}
+{% block site_header %}
+{% set guest = session.get('guest_name', '') %}
+<header class="app-header ws-header" data-app-header>
+  <div class="header-inner ws-header-inner">
+    <a class="brand-lockup" href="{{ url_for('site.home') }}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 2.6 17 9.5 14.6 19 12 21.4 9.4 19 7 9.5Z" fill="currentColor"/>
+          <circle cx="12" cy="13.4" r="1.7" fill="#ffffff"/>
+          <path d="M12 15.1V21.3" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-words">
+        <span class="brand-name">Lekhani</span>
+        <span class="brand-script" lang="sa">लेखनी</span>
+      </span>
+    </a>
+
+    <a class="ws-header-back" href="{{ url_for('site.home') }}">Back to Home</a>
+    <p class="ws-header-title">Review workspace</p>
+
+    <div class="ws-header-guest">
+      <span class="badge">Guest</span>
+      <span class="guest-name" title="{{ guest }}">{{ guest }}</span>
+      <details class="guest-menu" data-guest-menu>
+        <summary class="guest-summary">
+          <span class="guest-avatar" aria-hidden="true">{{ guest[:1]|upper }}</span>
+          <span class="guest-name" title="{{ guest }}">{{ guest }}</span>
+          <span class="chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="guest-menu-panel">
+          <p class="guest-label">Guest workspace · identity not verified</p>
+          <a class="guest-menu-leave" href="{{ url_for('guest.logout') }}">Leave workspace</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+{% endblock %}
+{% block content %}
+{% set can_review = result and result.complete %}
+{% set coverage_total = (result.coverage.terminology|length + result.coverage.messaging|length
+                         + result.coverage.claim_patterns|length) if result else 0 %}
+<div class="page ws-desk" data-workspace
+     data-check-current="{{ '1' if check_current else '0' }}"
+     data-check-type="{{ result and values.content_type or '' }}"
+     data-check-audience="{{ result and values.audience or '' }}"
+     data-rule-mode="{{ values.rule_mode }}"
+     data-status="{{ status }}"
+     data-replace-url="{{ url_for('site.workspace_replace') }}"
+     data-rules-url="{{ url_for('site.workspace_rules', mode=values.rule_mode) }}">
+
+  <div class="ws-title-row">
+    <div>
+      <p class="eyebrow">Guest work · temporary</p>
+      <h1>Review workspace</h1>
+      <p class="ws-lede">Check a draft against the active rules. Every finding cites the
+         exact stored clause, and the final decision stays human.</p>
+    </div>
+    <p class="ws-fictional">{{ rule_set_name }} · {{ rule_set_detail }}</p>
+  </div>
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-announcer>
+    {%- if just_checked and result -%}
+      {%- if not result.complete -%}
+        Check incomplete. {{ result.rejected|length }} candidate finding(s) failed validation.
+      {%- elif coverage_total == 0 -%}
+        Check complete. No applicable rules exist for this content type.
+      {%- elif result.issues -%}
+        Check complete. {{ result.issues|length }} finding(s).
+      {%- else -%}
+        Check complete. No issues detected by the configured checks.
+      {%- endif -%}
+    {%- endif -%}
+  </p>
+
+  {% if confirm_sample %}
+  <section class="ws-confirm" aria-labelledby="sample-confirm-heading">
+    <h2 id="sample-confirm-heading">Load the fictional sample?</h2>
+    <p>Loading the sample replaces your current guest draft and activates the
+       sample rule set <span class="ws-mono">{{ sample_meta.rule_set_id }} ·
+       {{ sample_meta.version }}</span>. Your current text is not saved anywhere.
+       Export a review pack first if you want to keep a copy.</p>
+    <div class="ws-confirm-actions">
+      <button class="button button-primary" type="submit" form="workspace-form"
+              formaction="{{ url_for('site.workspace_sample') }}"
+              name="confirm_sample" value="1" formnovalidate>Load sample and replace draft</button>
+      <button class="button button-secondary" type="submit" form="workspace-form"
+              formaction="{{ url_for('site.workspace_keep') }}" formnovalidate>Keep this draft</button>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if confirm_new %}
+  <section class="ws-confirm" aria-labelledby="new-draft-heading">
+    <h2 id="new-draft-heading">Start a new draft?</h2>
+    <p>Your current guest draft is not saved anywhere in Lekhani. Starting a new
+       draft discards this text and its check results. Export a review pack first
+       if you want to keep a copy.</p>
+    <div class="ws-confirm-actions">
+      <button class="button button-primary" type="submit" form="workspace-form"
+              formaction="{{ url_for('site.workspace_new') }}"
+              name="discard" value="1" formnovalidate>Discard draft and start new</button>
+      <button class="button button-secondary" type="submit" form="workspace-form"
+              formaction="{{ url_for('site.workspace_keep') }}" formnovalidate>Keep this draft</button>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if errors %}
+  <div class="ws-alert" role="alert">
+    <p><strong>Some fields need attention.</strong></p>
+    <ul>
+      {% for field, message in errors.items() %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if check_error %}
+  <div class="ws-alert" role="alert"><p>{{ check_error }}</p></div>
+  {% endif %}
+  {% if export_error %}
+  <div class="ws-alert" role="alert"><p>{{ export_error }}</p></div>
+  {% endif %}
+  {% if import_error %}
+  <div class="ws-alert" role="alert">
+    <p><strong>That review pack was not opened.</strong> {{ import_error }}</p>
+  </div>
+  {% endif %}
+  {% if file_import_error %}
+  <div class="ws-alert" role="alert">
+    <p><strong>That file was not imported.</strong> {{ file_import_error }}</p>
+    <p>Your current draft is unchanged. You can try another file or keep editing.</p>
+  </div>
+  {% endif %}
+
+  {% if sample_mode %}
+  <section class="ws-sample" aria-labelledby="sample-heading" data-sample-panel>
+    <div class="ws-sample-copy">
+      <p class="eyebrow">Sample data · fictional</p>
+      <h2 id="sample-heading">{{ rule_set_name }} — {{ sample_meta.brand }} sample</h2>
+      <p>This sample uses its own rule set, version
+         <span class="ws-mono">{{ sample_meta.version }}</span>, scoped to
+         <strong>{{ sample_meta.content_type|capitalize }}</strong> content in
+         {{ sample_meta.language }}. It is separate from the workspace guideline
+         library and is not an approved organisational policy.</p>
+      {% if sample_loaded %}
+      <p class="ws-note ws-note--ok">Sample loaded. Run checks to see the five
+         expected findings, then edit the draft and run checks again.</p>
+      {% endif %}
+    </div>
+    <button class="button button-secondary" type="submit" form="workspace-form"
+            formaction="{{ url_for('site.workspace_rule_mode') }}" formnovalidate>Use workspace rules</button>
+  </section>
+  {% endif %}
+
+  {% if import_report %}
+  <div class="ws-import" data-import-report>
+    <h2>Opened review pack</h2>
+    <dl class="ws-meta">
+      <div><dt>Pack title</dt><dd>{{ import_report.title or "Untitled draft" }}</dd></div>
+      <div><dt>Pack rule set</dt>
+        <dd class="ws-mono">{{ import_report.rule_set.id }} · {{ import_report.rule_set.version }}</dd></div>
+      <div><dt>Locally recognised</dt>
+        <dd>{% if import_report.known_rule_set %}Yes — checks were rerun with the local rule set.
+            {% else %}No — the original rules could not be verified.{% endif %}</dd></div>
+    </dl>
+    {% if import_report.fingerprint_matches is none %}
+    <p class="ws-note">No content fingerprint was included in this pack, so the draft could
+       not be compared with an exported fingerprint.</p>
+    {% elif import_report.fingerprint_matches %}
+    <p class="ws-note ws-note--ok">The draft matches the exported fingerprint.</p>
+    {% else %}
+    <p class="ws-note ws-note--warn">The draft differs from the exported fingerprint.</p>
+    {% endif %}
+    <p class="ws-hint">The content fingerprint detects change; it is not a signature and does not prove who created or reviewed this file.</p>
+    {% if import_report.import_note %}
+    <p class="ws-note ws-note--warn">{{ import_report.import_note }}</p>
+    {% endif %}
+    {% if import_report.known_rule_set %}
+    <p class="ws-note">Current findings below come from a fresh check with the locally
+       recognised rule set. Imported findings are kept only as history.</p>
+    {% else %}
+    <p class="ws-note ws-note--warn">The pack's rule snapshots were not activated. The pack's
+       imported findings are historical and are not current results. Only the draft text was
+       imported; run checks with the local rules when you are ready.</p>
+    {% endif %}
+    <p class="ws-note ws-note--warn">Imported findings and any guest-review label in the pack
+       were not treated as current, and no imported rule became an approved rule.</p>
+    {% if import_report.imported_review_present %}
+    <p class="ws-note ws-note--warn">A guest-review label was present in the pack. It is not
+       shown as a decision here and is not an authorised approval.</p>
+    {% endif %}
+    {% if import_report.imported_findings %}
+    <details class="ws-history">
+      <summary>Historical findings from the pack ({{ import_report.imported_findings|length }})</summary>
+      <ul class="ws-history-list">
+        {% for finding in import_report.imported_findings %}
+        <li><span class="rule-chip">{{ finding.rule_id }}</span>
+          {{ finding.message }}
+          {% if finding.quote %}<span class="ws-history-quote">“{{ finding.quote }}”</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if file_preview %}
+  <section class="ws-file-preview" aria-labelledby="file-preview-heading" data-file-preview>
+    <p class="eyebrow">Import preview · nothing has been replaced yet</p>
+    <h2 id="file-preview-heading">{{ file_preview.filename }}</h2>
+    <p class="ws-hint">
+      {% if file_preview.kind == 'pdf' %}Text-based PDF{% else %}UTF-8 text file{% endif %}
+      {% if file_preview.pages %}· {{ file_preview.pages }} page(s){% endif %}
+      · {{ "{:,}".format(file_preview.text|length) }} characters extracted.
+      The preview is editable; adjusting it here does not change the original file.
+    </p>
+    <form id="ws-file-use-form" method="post"
+          action="{{ url_for('site.workspace_import_file') }}" class="ws-file-use">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="import_stage" value="use">
+      <input type="hidden" name="import_filename" value="{{ file_preview.filename }}">
+      <input type="hidden" name="import_kind" value="{{ file_preview.kind }}">
+      <input type="hidden" name="import_pages" value="{{ file_preview.pages or '' }}">
+      <input type="hidden" name="title" value="{{ values.title }}">
+      <input type="hidden" name="content_type" value="{{ values.content_type }}">
+      <input type="hidden" name="audience" value="{{ values.audience }}">
+      <input type="hidden" name="notes" value="">
+      <input type="hidden" name="rule_mode" value="{{ values.rule_mode }}">
+      <label for="import-text">Extracted text (editable)</label>
+      <textarea id="import-text" name="import_text" rows="12"
+                maxlength="{{ max_draft_length }}">{{ file_preview.text }}</textarea>
+      <div class="ws-file-preview-actions">
+        <button class="button button-primary" type="submit">Use this text</button>
+        <button class="button button-secondary" type="submit" form="workspace-form"
+                formaction="{{ url_for('site.workspace_keep') }}" formnovalidate>Cancel import</button>
+      </div>
+      <p class="ws-hint">Using this text replaces the draft in the editor. Imported
+         text is draft content only; it is never treated as approved guidelines.</p>
+    </form>
+  </section>
+  {% endif %}
+
+  <form class="ws-form" id="workspace-form" method="post"
+        action="{{ url_for('site.workspace_check') }}" data-workspace-form novalidate>
+    {% include "workspace/_carried_fields.html" %}
+
+    <div class="ws-toolbar">
+      <div class="ws-toolbar-left">
+        <div class="ws-title-field">
+          <label for="draft-title">Draft title</label>
+          <input id="draft-title" name="title" type="text" maxlength="200"
+                 value="{{ values.title }}" placeholder="Untitled draft" autocomplete="off">
+        </div>
+        <div class="ws-status-wrap">
+          <span class="ws-status" data-check-status data-status="{{ status }}">{{ status_label }}</span>
+          <span class="ws-status-detail" data-status-detail>
+            {% if status == 'checked' %}Checked against {{ active_rule_set.id }} · {{ active_rule_set.version }}.
+            {% elif status == 'incomplete' %}Some candidate findings failed reference validation.
+            {% elif status == 'changes' %}The draft, content type, audience, or rules changed after the last check.
+            {% elif status == 'failed' %}The last check did not run.
+            {% else %}No check has been run for this draft.{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="ws-toolbar-actions">
+        <details class="ws-menu" id="file-import-panel" data-file-import>
+          <summary class="button button-secondary">Import file</summary>
+          <div class="ws-menu-panel">
+            <p class="ws-hint">One UTF-8 .txt or text-based PDF, up to {{ max_upload_mb }} MB
+               and {{ max_pdf_pages }} PDF pages. You will see an editable preview before
+               anything replaces the current draft.</p>
+            <label class="ws-check" for="draft-file">Draft file</label>
+            <input form="ws-file-form" id="draft-file" name="draft_file" type="file"
+                   accept=".txt,.pdf,text/plain,application/pdf">
+            <button class="button button-secondary" type="submit" form="ws-file-form">
+              Preview extracted text</button>
+            <p class="ws-hint">With JavaScript enabled, you can also drag a .txt or PDF
+               onto the editor. Scanned documents need OCR, which is not supported.</p>
+            <p class="ws-hint">Prefer a worked example?
+               <button class="ws-link-button" type="submit"
+                       formaction="{{ url_for('site.workspace_sample') }}"
+                       formnovalidate>Test a sample</button>
+               (replaces this draft only after you confirm).</p>
+          </div>
+        </details>
+
+        <details class="ws-menu">
+          <summary class="button button-secondary">Open pack</summary>
+          <div class="ws-menu-panel">
+            <p class="ws-hint">JSON review packs only, up to {{ max_pack_kb }} KB. Opening a pack
+               replaces this draft and reruns checks only when its rule set is recognised locally.</p>
+            <label class="ws-check" for="pack-file">Review-pack JSON file</label>
+            <input form="ws-import-form" id="pack-file" name="pack" type="file"
+                   accept="application/json,.json">
+            <label class="ws-check ws-check--confirm">
+              <input form="ws-import-form" type="checkbox" name="confirm_replace" value="1">
+              I understand that opening a pack replaces the current draft.
+            </label>
+            <button class="button button-secondary" type="submit" form="ws-import-form">Open review pack</button>
+          </div>
+        </details>
+
+        <details class="ws-menu">
+          <summary class="button button-secondary">Export</summary>
+          <div class="ws-menu-panel">
+            <button class="button button-secondary" type="submit"
+                    formaction="{{ url_for('site.workspace_export') }}"
+                    formnovalidate>Export review pack</button>
+            <button class="button button-secondary" type="submit"
+                    formaction="{{ url_for('site.workspace_print') }}"
+                    formnovalidate>Print summary</button>
+            <p class="ws-hint">The pack downloads from this app server. It is the deliberate
+               way to keep a copy of temporary guest work.</p>
+          </div>
+        </details>
+
+        <button class="button button-secondary" type="submit"
+                formaction="{{ url_for('site.workspace_new') }}"
+                formnovalidate data-new-draft>New draft</button>
+      </div>
+    </div>
+
+    <p class="ws-temp-note"><strong>Temporary guest work.</strong> Guest work is temporary
+       and is not saved to an account. Export a review pack to keep a copy.</p>
+
+    {% if not values.body.strip() and not file_preview %}
+    <section class="ws-start" aria-labelledby="ws-start-heading">
+      <h2 id="ws-start-heading">Start with your content</h2>
+      <p class="ws-start-lede">Choose how to begin. Nothing is loaded automatically, and the
+         workspace does not contain sample text unless you ask for it.</p>
+      <ul class="ws-start-grid">
+        <li>
+          <a class="ws-start-card" href="#draft-body" data-focus-editor>
+            <span class="ws-start-title">1. Write or paste</span>
+            <span class="ws-start-text">Type your draft into the plain-text editor.</span>
+          </a>
+        </li>
+        <li>
+          <a class="ws-start-card" href="#file-import-panel" data-open-file-import>
+            <span class="ws-start-title">2. Import file</span>
+            <span class="ws-start-text">Choose a UTF-8 .txt or text-based PDF (up to
+               {{ max_upload_mb }} MB, {{ max_pdf_pages }} pages).</span>
+          </a>
+        </li>
+        <li>
+          <button class="ws-start-card ws-start-button" type="submit"
+                  formaction="{{ url_for('site.workspace_sample') }}" formnovalidate>
+            <span class="ws-start-title">3. Test a sample</span>
+            <span class="ws-start-text">Load the fictional {{ sample_meta.brand }} sample
+               and its own {{ sample_meta.version }} rules.</span>
+          </button>
+        </li>
+      </ul>
+      <p class="ws-hint">The sample is fictional. Manual, imported, and sample text all go
+         through the same checker and citation validator.</p>
+    </section>
+    {% endif %}
+
+    <ol class="ws-workflow" aria-label="Workflow: draft, check, revise, guest review">
+      <li class="is-done">Draft</li>
+      <li class="{{ 'is-done' if carried_snapshot else 'is-current' }}">Check</li>
+      <li class="{{ 'is-current' if status == 'changes' else ('is-done' if review else '') }}">Revise</li>
+      <li class="{{ 'is-done' if review_current else ('is-current' if can_review else '') }}">Guest review</li>
+    </ol>
+
+    <div class="ws-tabs" role="tablist" aria-label="Workspace panels" data-ws-tablist>
+      <button type="button" role="tab" id="ws-tab-write" aria-controls="ws-panel-write"
+              aria-selected="true" tabindex="0" data-ws-tab="write">Write</button>
+      <button type="button" role="tab" id="ws-tab-findings" aria-controls="ws-panel-findings"
+              aria-selected="false" tabindex="-1" data-ws-tab="findings">Findings
+        <span class="ws-tab-count" data-finding-count>{{ finding_count }}</span></button>
+      <button type="button" role="tab" id="ws-tab-evidence" aria-controls="ws-panel-evidence"
+              aria-selected="false" tabindex="-1" data-ws-tab="evidence">Evidence</button>
+    </div>
+
+    <div class="ws-columns" data-ws-columns>
+      <section class="ws-panel ws-panel--editor" id="ws-panel-write" role="tabpanel"
+               aria-labelledby="ws-tab-write" data-ws-panel="write">
+        <div class="ws-panel-head">
+          <h2>Your content</h2>
+          <span class="ws-panel-note">Plain text</span>
+        </div>
+        <p class="ws-drop-hint" data-drop-hint hidden>Drop a .txt or PDF file to preview its text.</p>
+
+        <div class="ws-field-row">
+          <div class="ws-field">
+            <label for="draft-type">Content type</label>
+            <select id="draft-type" name="content_type"
+                    {% if errors.content_type %}aria-invalid="true" aria-describedby="type-error"{% endif %}>
+              <option value="">Choose…</option>
+              {% for value, label in content_types %}
+              <option value="{{ value }}" {% if values.content_type == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            {% if errors.content_type %}<p class="ws-error" id="type-error">{{ errors.content_type }}</p>{% endif %}
+          </div>
+          <div class="ws-field">
+            <label for="draft-audience">Intended audience</label>
+            <input id="draft-audience" name="audience" type="text" maxlength="300"
+                   value="{{ values.audience }}" placeholder="e.g. prospective customers">
+            <p class="ws-hint" id="audience-hint">Context metadata only. This build does not
+               understand or analyse an audience.</p>
+          </div>
+        </div>
+
+        <div class="ws-editor-head">
+          <div class="ws-view-tabs" role="tablist" aria-label="Editor view">
+            <button type="button" role="tab" id="ws-view-edit" aria-controls="ws-view-panel-edit"
+                    aria-selected="true" tabindex="0" data-editor-tab="edit">Edit</button>
+            <button type="button" role="tab" id="ws-view-preview" aria-controls="ws-view-panel-preview"
+                    aria-selected="false" tabindex="-1" data-editor-tab="preview">Check preview</button>
+          </div>
+          <button type="button" class="button button-ghost" data-expand-editor
+                  aria-expanded="false" aria-controls="ws-panel-write">Expand editor</button>
+        </div>
+
+        <div id="ws-view-panel-edit" role="tabpanel" aria-labelledby="ws-view-edit"
+             data-editor-view="edit">
+          <div class="ws-field">
+            <label for="draft-body">Draft</label>
+            <textarea id="draft-body" name="body" rows="16" maxlength="{{ max_draft_length }}"
+                      placeholder="Write or paste your content…"
+                      aria-describedby="body-hint ws-counts{% if errors.body %} body-error{% endif %}"
+                      {% if errors.body %}aria-invalid="true"{% endif %}>{{ values.body }}</textarea>
+            <p class="ws-hint" id="body-hint">Plain text only. No uploads, tables, or rich-text
+               formatting. Checks process this text on the app server.</p>
+            {% if errors.body %}<p class="ws-error" id="body-error">{{ errors.body }}</p>{% endif %}
+            <p class="ws-counts" id="ws-counts"><span data-word-count>{{ word_count }}</span> words ·
+               <span data-char-count>{{ char_count }}</span> characters. Words are runs of
+               non-whitespace characters; characters include spaces.</p>
+          </div>
+        </div>
+
+        <div id="ws-view-panel-preview" role="tabpanel" aria-labelledby="ws-view-preview"
+             data-editor-view="preview" hidden>
+          <p class="ws-hint">Read-only view of the exact checked snapshot. Highlighted text has a
+             validated finding; exact missing phrases have no invented span.</p>
+          {% if result %}
+          <div class="ws-preview" data-preview>{% for segment in preview_segments %}{% if segment.rule_ids %}<mark class="ws-mark" data-rule-ids="{{ segment.rule_ids|join(' ') }}">{{ segment.text }}</mark>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
+          {% else %}
+          <p class="ws-empty">Run checks to see a read-only preview of the checked draft.</p>
+          {% endif %}
+        </div>
+
+        <p class="ws-stale" data-editor-stale {% if status != 'changes' %}hidden{% endif %}>
+          Your draft changed. Run checks again to update findings.</p>
+      </section>
+
+      <section class="ws-panel ws-panel--findings" id="ws-panel-findings" role="tabpanel"
+               aria-labelledby="ws-tab-findings" data-ws-panel="findings">
+        <div class="ws-panel-head">
+          <h2>Findings</h2>
+          {% if result %}<span class="ws-count-badge">{{ finding_count }}
+            finding{{ "" if finding_count == 1 else "s" }}</span>{% endif %}
+        </div>
+
+        {% if result %}
+          {% if not result.complete %}
+          <div class="ws-incomplete" role="alert">
+            <h3>Check incomplete</h3>
+            <p>Do not read this run as a clean result. Some candidate findings failed
+               reference validation or the check could not complete.</p>
+            <ul>
+              {% for warning in result.warnings %}<li>{{ warning }}</li>{% endfor %}
+              {% for reason in result.rejection_reasons %}<li>{{ reason }}</li>{% endfor %}
+            </ul>
+            <p>{{ result.rejected|length }} rejected candidate finding(s) are not shown as
+               validated content issues.</p>
+          </div>
+          {% endif %}
+
+          <div class="ws-filters" role="group" aria-label="Filter findings by category">
+            {% for key, label in categories %}
+            <button type="button" class="ws-filter" data-filter="{{ key }}"
+                    aria-pressed="{{ 'true' if key == 'all' else 'false' }}">
+              {{ label }} <span data-filter-count="{{ key }}">{% if key == 'all' %}{{ finding_count }}{% else %}{{ counts[key] }}{% endif %}</span>
+            </button>
+            {% endfor %}
+          </div>
+
+          {% if result.issues %}
+          <ol class="ws-finding-list" data-finding-list>
+            {% for item in evidence %}
+            <li data-finding-item="{{ item.issue.rule_id }}" data-category="{{ item.category }}">
+              <button type="button" class="ws-finding" data-finding="{{ item.issue.rule_id }}"
+                      aria-pressed="false" aria-controls="evidence-{{ item.issue.rule_id }}">
+                <span class="ws-finding-top">
+                  <span class="ws-chip">{{ item.category_label }}</span>
+                  {% if item.issue.is_prompt %}<span class="ws-prompt">Human review requested</span>{% endif %}
+                  <span class="ws-ruleid">{{ item.issue.rule_id }}</span>
+                </span>
+                <span class="ws-finding-title">{{ item.issue.title or item.issue.message }}</span>
+                {% if item.issue.excerpt %}
+                <span class="ws-finding-excerpt"><span class="ws-label">Affected text</span>
+                  “{{ item.issue.excerpt }}”</span>
+                {% else %}
+                <span class="ws-finding-excerpt"><span class="ws-label">Required phrase not found</span>
+                  No offending text span exists for this finding.</span>
+                {% endif %}
+                <span class="ws-finding-action">Inspect rule <span aria-hidden="true">→</span></span>
+              </button>
+            </li>
+            {% endfor %}
+          </ol>
+          <p class="ws-hint">Checks are deterministic and assign no severity or confidence
+             scores. Claim matches prompt human review; they are not verdicts.</p>
+          {% elif result.complete and coverage_total == 0 %}
+          <div class="ws-outdated" role="alert">
+            <p><strong>No applicable rules exist for this content type.</strong></p>
+            <p>Nothing was checked against a rule, so this is not an all-clear.
+               Choose a content type covered by the active rule set or switch rule sets.</p>
+          </div>
+          {% elif result.complete %}
+          <div class="ws-clean">
+            <p>No issues detected by the configured checks.</p>
+            <p>This does not establish factual correctness or legal compliance.</p>
+          </div>
+          {% endif %}
+        {% else %}
+          {% if status == 'changes' %}
+          <div class="ws-outdated" role="alert">
+            <p><strong>These results are outdated.</strong> The draft, content type, audience, or
+               rule set changed after the last check. Those findings were discarded rather than
+               shown as current. Run checks again.</p>
+          </div>
+          {% elif status == 'failed' %}
+          <div class="ws-outdated" role="alert">
+            <p><strong>Check failed.</strong> No findings were produced. Fix the highlighted
+               fields and retry the check.</p>
+          </div>
+          {% endif %}
+          <div class="ws-empty-state">
+            <p>Findings will appear here.</p>
+            <p>Run a check against the selected rules.</p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="ws-panel ws-panel--evidence" id="ws-panel-evidence" role="tabpanel"
+               aria-labelledby="ws-tab-evidence" data-ws-panel="evidence">
+        <div class="ws-panel-head"><h2>Rule evidence</h2></div>
+        <p class="ws-empty" data-evidence-empty>Select a finding to inspect its exact rule.</p>
+
+        {% for item in evidence %}
+        <article class="ws-evidence" id="evidence-{{ item.issue.rule_id }}"
+                 data-evidence="{{ item.issue.rule_id }}" tabindex="-1" hidden>
+          <div class="ws-evidence-head">
+            <span class="ws-chip">{{ item.category_label }}</span>
+            <a class="ws-back-findings" href="#ws-panel-findings" data-back-findings>Back to findings</a>
+          </div>
+          <h3>{{ item.issue.title or item.issue.message }}</h3>
+          <dl class="ws-meta">
+            <div><dt>Rule ID</dt><dd class="ws-mono">{{ item.issue.rule_id }}</dd></div>
+            <div><dt>Category</dt><dd>{{ item.category_label }}</dd></div>
+            <div><dt>Rule set</dt><dd>{{ rule_set_name }} ·
+              <span class="ws-mono">{{ item.issue.rule_set_id }} · {{ item.issue.rule_set_version }}</span></dd></div>
+            <div><dt>Applies to</dt><dd>{{ item.applies_label }}</dd></div>
+          </dl>
+
+          <h4>Exact clause</h4>
+          <blockquote class="ws-clause">{{ item.issue.quote }}</blockquote>
+
+          <h4>Why it was flagged</h4>
+          <p>{{ item.issue.message }}</p>
+
+          <h4>Suggested action</h4>
+          {% if item.rule and item.rule.replacement %}
+          <p>Replace this occurrence with “{{ item.rule.replacement }}”. This is a safe, exact
+             terminology substitution, applied only to the occurrence you choose.</p>
+          <div class="ws-replace" data-replace data-rule-id="{{ item.issue.rule_id }}"
+               data-replacement="{{ item.rule.replacement }}">
+            <label for="occurrence-{{ item.issue.rule_id }}">Occurrence</label>
+            <select id="occurrence-{{ item.issue.rule_id }}" data-occurrence>
+              {% for start, end in item.issue.occurrences %}
+              <option value="{{ start }}:{{ end }}">Occurrence {{ loop.index }} of {{ loop.length }}</option>
+              {% endfor %}
+            </select>
+            <button type="button" class="button button-ghost" data-preview-replace>Preview replacement</button>
+            <div class="ws-replace-preview" data-replace-preview hidden>
+              <p><span class="ws-label">Before</span> <span class="ws-before" data-before></span></p>
+              <p><span class="ws-label">After</span> <span class="ws-after" data-after></span></p>
+              <button type="button" class="button button-secondary" data-apply-replace>Apply this occurrence</button>
+              <button type="button" class="button button-ghost" data-undo-replace hidden>Undo replacement</button>
+            </div>
+            <p class="ws-replace-status" data-replace-status role="status"></p>
+          </div>
+          {% elif item.issue.is_claim %}
+          <p>No automatic fix. Ask a human to check the evidence behind this wording, then
+             revise it or keep it. The checker never decides whether a claim is true or legal.</p>
+          {% else %}
+          <p>No automatic fix is configured for this rule. Revise the draft text yourself if
+             the clause applies.</p>
+          {% endif %}
+
+          <h4>Reference validation</h4>
+          <p class="ws-valid">Rule identifier, quotation, and version match.</p>
+          <p class="ws-hint">Citation validation proves the reference, not that the finding is
+             correct in your context.</p>
+          <p class="ws-meta-line"><span class="ws-label">Source reference</span> None supplied
+             (fictional demo guideline).</p>
+          <p class="ws-evidence-actions">
+            <a href="{{ url_for('site.workspace_rules', mode=values.rule_mode) }}#rule-{{ item.issue.rule_id }}"
+               data-open-rule="{{ item.issue.rule_id }}">View full rule</a>
+          </p>
+        </article>
+        {% endfor %}
+      </section>
+    </div>
+
+    <div class="ws-actions">
+      <div class="ws-actions-meta">
+        <p>Active rule set <strong>{{ rule_set_name }}</strong>
+           <span class="ws-mono">{{ active_rule_set.id }} · {{ active_rule_set.version }}</span></p>
+        <p class="ws-hint">{{ rule_set_detail }}</p>
+        <a class="ws-inline-link" href="{{ url_for('site.workspace_rules', mode=values.rule_mode) }}" data-open-rules>View rules</a>
+      </div>
+      {% if not values.body.strip() %}
+      <p class="ws-run-hint" id="run-hint">Enter draft text to run checks.</p>
+      {% endif %}
+      <button class="button button-primary ws-run" type="submit" data-run-checks
+              {% if not values.body.strip() %}disabled aria-describedby="run-hint"{% endif %}>
+        {%- if status == 'failed' -%}Retry check
+        {%- elif status in ('checked', 'incomplete', 'changes') -%}Run checks again →
+        {%- else -%}Run checks →{%- endif -%}
+      </button>
+    </div>
+
+    <details class="ws-accordion" data-coverage>
+      <summary>
+        <span>Check coverage</span>
+        <span class="ws-acc-meta">{% if result %}from the last check{% else %}no current check{% endif %}</span>
+      </summary>
+      <div class="ws-acc-body">
+        {% if result %}
+        <p class="ws-hint">Rule counts are not matched-finding counts.</p>
+        <ul class="ws-coverage">
+          <li><strong>{{ result.coverage.terminology|length }}</strong> applicable terminology rules evaluated.</li>
+          <li><strong>{{ result.coverage.messaging|length }}</strong> applicable messaging rules evaluated.</li>
+          <li><strong>{{ result.coverage.claim_patterns|length }}</strong> claim-trigger patterns evaluated.</li>
+          <li>Active rule-set version:
+            <strong class="ws-mono">{{ result.rule_set_id }} · {{ result.rule_set_version }}</strong>.</li>
+          <li><strong>{{ result.rejected|length }}</strong> candidate findings rejected by reference validation.</li>
+        </ul>
+        {% if coverage_total == 0 %}
+        <p class="ws-warn">No applicable rules exist for this content type in the active rule set.
+           This is not a comprehensive check and must not be read as an all-clear.</p>
+        {% endif %}
+        {% else %}
+        <p class="ws-empty">Run a check to see what was evaluated and what was not.</p>
+        {% endif %}
+        <h3>Not determined by this check</h3>
+        <ul class="ws-limits">
+          <li>Whether every factual claim is true.</li>
+          <li>Legal compliance.</li>
+          <li>Visual brand consistency.</li>
+          <li>Full accessibility.</li>
+          <li>Tone beyond the implemented rules.</li>
+        </ul>
+        <p class="ws-hint">Claim-trigger matches prompt review; they do not determine truth or
+           legality. Fictional demo guidelines are not an organisation-approved policy.</p>
+      </div>
+    </details>
+
+    <details class="ws-accordion" data-review>
+      <summary>
+        <span>Guest review</span>
+        <span class="ws-acc-meta">{% if review_current %}recorded{% elif review_outdated %}outdated{% else %}not recorded{% endif %}</span>
+      </summary>
+      <div class="ws-acc-body">
+        <p class="ws-review-notice" role="note"><strong>Guest review demonstration.</strong>
+           Identity is not verified. This is not an authorised organisational approval.</p>
+
+        {% if review_current %}
+        <div class="ws-review-card" data-review-card>
+          <p class="ws-review-outcome">{{ review_label }}</p>
+          <dl class="ws-meta">
+            <div><dt>Guest display name</dt><dd>{{ review.guest_name }}</dd></div>
+            <div><dt>Decision time</dt><dd>{{ review.recorded_at }}</dd></div>
+            <div><dt>Content type</dt><dd>{{ review.content_type|capitalize }}</dd></div>
+            <div><dt>Audience</dt><dd>{{ review.audience or "Not supplied" }}</dd></div>
+            <div><dt>Reviewed rule set</dt>
+              <dd class="ws-mono">{{ review.rule_set_id }} · {{ review.rule_set_version }}</dd></div>
+            <div><dt>Check-run reference</dt><dd>{{ review.check_checked_at }}</dd></div>
+            <div><dt>Reviewed snapshot fingerprint (SHA-256)</dt>
+              <dd class="ws-mono" title="SHA-256 of the UTF-8 draft text">{{ review.fingerprint[:16] }}…</dd></div>
+          </dl>
+          {% if review.note %}<p class="ws-review-note">{{ review.note }}</p>{% endif %}
+          <p class="ws-hint">Held in this temporary page state only. Nothing was saved, sent for
+             approval, or published.</p>
+        </div>
+        {% elif review_outdated %}
+        <div class="ws-outdated" data-review-outdated>
+          <p><strong>This guest review is outdated.</strong> The draft, its metadata, or the
+             active rules changed after the review was recorded. The earlier outcome is not
+             carried over to this version.</p>
+        </div>
+        {% endif %}
+
+        {% if review_error %}
+        <p class="ws-error" role="alert">{{ review_error }}</p>
+        {% endif %}
+        <p class="ws-error" role="alert" data-review-live hidden></p>
+        <div class="ws-outdated" data-review-stale-live hidden>
+          <p><strong>This guest review is outdated.</strong> The draft, its metadata, or the
+             active rules changed after the review was recorded. The earlier outcome is not
+             carried over to this version.</p>
+        </div>
+
+        <div class="ws-field">
+          <label for="review-note">Review note</label>
+          <textarea id="review-note" name="notes" rows="3" maxlength="5000"
+                    placeholder="Required for Needs changes. Say what must change and why.">{{ values.notes }}</textarea>
+          {% if errors.notes %}<p class="ws-error">{{ errors.notes }}</p>{% endif %}
+          <p class="ws-hint">An actionable note is required to record “Needs changes”. This note
+             is part of the temporary record and the exported review pack.</p>
+        </div>
+
+        {% if can_review %}
+        <div class="ws-review-actions">
+          <button class="button button-secondary" type="submit"
+                  formaction="{{ url_for('site.workspace_review') }}"
+                  name="outcome" value="changes" data-review-outcome="changes">Needs changes</button>
+          <button class="button button-secondary" type="submit"
+                  formaction="{{ url_for('site.workspace_review') }}"
+                  name="outcome" value="approved" data-review-outcome="approved">Mark approved — demo</button>
+        </div>
+        <p class="ws-hint">A completed check may still contain findings. The checker never
+           approves content automatically; this demonstration only records a guest's decision.</p>
+        {% else %}
+        <p class="ws-warn">Recording a guest review needs a current, completed check for this
+           exact draft. {% if status == 'incomplete' %}The last check was incomplete — resolve the
+           problem and run checks again.{% else %}Run checks first.{% endif %}</p>
+        {% endif %}
+      </div>
+    </details>
+
+    <div class="ws-foot">
+      <p><a href="{{ url_for('site.trust_lab') }}">Open Trust Lab</a> — isolated fictional
+         demonstrations. Lab work never changes these rules or this draft.</p>
+      <p><a class="ws-inline-link" href="{{ url_for('site.home') }}#round-3">What’s coming in Round 3</a>
+         — accounts, verified reviews, and versioned brand rules.</p>
+      <p>Guest work is temporary. Export a review pack to keep a copy. Checking sends the draft
+         text to this app server for rule matching; the draft is not stored in the database,
+         client-side cookies, localStorage, or the URL. This is not a secure reviewer login.</p>
+    </div>
+  </form>
+
+  <form id="ws-import-form" method="post" action="{{ url_for('site.workspace_import') }}"
+        enctype="multipart/form-data" class="ws-import-form">
+    <input type="hidden" name="title" value="{{ values.title }}">
+    <input type="hidden" name="body" value="{{ values.body }}">
+    <input type="hidden" name="content_type" value="{{ values.content_type }}">
+    <input type="hidden" name="audience" value="{{ values.audience }}">
+    <input type="hidden" name="notes" value="{{ values.notes }}">
+    {% include "workspace/_carried_fields.html" %}
+  </form>
+
+  <form id="ws-file-form" method="post" action="{{ url_for('site.workspace_import_file') }}"
+        enctype="multipart/form-data" class="ws-import-form" data-file-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="title" value="{{ values.title }}">
+    <input type="hidden" name="body" value="{{ values.body }}">
+    <input type="hidden" name="content_type" value="{{ values.content_type }}">
+    <input type="hidden" name="audience" value="{{ values.audience }}">
+    <input type="hidden" name="notes" value="{{ values.notes }}">
+    <input type="hidden" name="rule_mode" value="{{ values.rule_mode }}">
+  </form>
+
+  <dialog class="ws-drawer" id="rules-drawer" aria-labelledby="rules-drawer-title" data-rules-drawer>
+    <div class="ws-drawer-head">
+      <div>
+        <p class="eyebrow">{{ rule_set_name }}</p>
+        <h2 id="rules-drawer-title">Rules</h2>
+        <p class="ws-mono ws-muted">{{ active_rule_set.id }} · {{ active_rule_set.version }}</p>
+        <p class="ws-hint">{{ rule_set_detail }}. {% if sample_mode %}Fictional sample — not an
+           approved organisational policy.{% endif %}</p>
+      </div>
+      <button type="button" class="button button-secondary" data-close-rules>Close</button>
+    </div>
+    <div class="ws-drawer-tools">
+      <div class="ws-field">
+        <label for="rule-search">Search rules</label>
+        <input id="rule-search" type="search" placeholder="Rule ID, clause, or term"
+               data-rule-search autocomplete="off">
+      </div>
+      <div class="ws-filters" role="group" aria-label="Filter rules by category">
+        {% for key, label in categories %}
+        <button type="button" class="ws-filter" data-rule-filter="{{ key }}"
+                aria-pressed="{{ 'true' if key == 'all' else 'false' }}">{{ label }}</button>
+        {% endfor %}
+      </div>
+      <p class="ws-hint">Rules are read-only in the guest workspace. Rule simulation is isolated
+         in the Trust Lab and cannot change these rules.</p>
+    </div>
+    <div class="ws-rules-list" data-rules-list>
+      {% include "workspace/_rules_list.html" %}
+    </div>
+  </dialog>
+</div>
+{% endblock %}

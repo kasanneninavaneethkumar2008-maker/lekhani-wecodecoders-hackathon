@@ -1,0 +1,187 @@
+{% extends "site_base.html" %}
+{% block title %}Trust Lab{% endblock %}
+{% block content %}
+<div class="page lab-page">
+  <header class="page-intro">
+    <p class="badge badge-quiet">Interactive demonstration · Fictional rules</p>
+    <p class="eyebrow">Trust Lab</p>
+    <h1>Try to break the evidence.</h1>
+    <p class="page-lede">Explore how Lekhani validates rule references before presenting
+       findings. Nothing here touches your workspace draft or the approved rules.</p>
+  </header>
+
+  <section class="lab-card" aria-labelledby="citation-lab-heading">
+    <h2 id="citation-lab-heading">Citation validator</h2>
+    <p>The same shared validator used by the workspace checks a candidate finding against
+       an isolated fictional rule set. Test cases are separate from real work.</p>
+
+    <form method="post" action="{{ url_for('site.trust_lab') }}" class="lab-case-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <fieldset class="case-picker">
+        <legend>Choose a test case</legend>
+        {% for key, label in case_order %}
+        <div class="case-option">
+          <input type="radio" id="case-{{ key }}" name="case" value="{{ key }}"
+                 {% if selected == key %}checked{% endif %}>
+          <label for="case-{{ key }}">
+            <span class="case-title">{{ label }}</span>
+            <span class="case-desc">{{ cases[key].description }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </fieldset>
+      <button class="button button-primary" type="submit">Validate finding</button>
+    </form>
+
+    <div class="candidate" aria-labelledby="candidate-heading">
+      <h3 id="candidate-heading">Candidate finding</h3>
+      <dl class="meta-list">
+        <div><dt>Candidate rule ID</dt><dd><code>{{ cases[selected].rule_id }}</code></dd></div>
+        <div><dt>Candidate quoted clause</dt><dd>“{{ cases[selected].quote }}”</dd></div>
+        <div><dt>Rule set</dt><dd>{{ v1_version }}</dd></div>
+      </dl>
+      {% if cases[selected].stored_clause %}
+      <details class="stored-clause" open>
+        <summary>Stored clause for this identifier</summary>
+        <blockquote>{{ cases[selected].stored_clause }}</blockquote>
+      </details>
+      {% else %}
+      <p class="field-hint">No stored clause exists for this identifier in the selected
+         rule set.</p>
+      {% endif %}
+    </div>
+
+    {% if outcome %}
+    <div class="outcome {{ 'outcome-accepted' if outcome.accepted else 'outcome-rejected' }}"
+         role="status" aria-live="polite">
+      <p class="outcome-status">{{ "Accepted" if outcome.accepted else "Rejected" }}</p>
+      <p class="outcome-message">{{ outcome.message }}</p>
+      {% if not outcome.accepted %}
+      <p>Rejected findings are not displayed as validated content issues.</p>
+      {% endif %}
+      {% if outcome.stored_clause and not outcome.accepted %}
+      <p class="outcome-stored">Stored clause: “{{ outcome.stored_clause }}”</p>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="field-hint">Select a case and validate it to see the outcome. Outcomes do
+       not rely on colour alone.</p>
+    {% endif %}
+
+    <p class="lab-note">A valid reference does not prove that a finding is contextually
+       correct.</p>
+  </section>
+
+  <section class="lab-card" id="simulator" aria-labelledby="simulator-heading">
+    <p class="badge badge-quiet">Simulation · Not an official rule update</p>
+    <h2 id="simulator-heading">What changes when the rules change?</h2>
+    <p>Compare two fictional bundled guidelines with the shared checker. These are
+       lab-only versions; the workspace rules and any exported review status stay
+       untouched.</p>
+
+    <form method="post" action="{{ url_for('site.trust_lab_simulate') }}" class="sim-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="simulation-text">Simulation text</label>
+        <textarea id="simulation-text" name="simulation_text" rows="4"
+                  maxlength="{{ max_draft_length }}">{{ simulation_text }}</textarea>
+        <p class="field-hint">Example text is available only in this labelled lab.</p>
+      </div>
+      <div class="button-row">
+        <button class="button button-secondary" type="submit" name="load_example"
+                value="1">Load fictional example</button>
+        <button class="button button-primary" type="submit">Compare rules</button>
+      </div>
+    </form>
+    {% if sim_error %}<p class="field-error" role="alert">{{ sim_error }}</p>{% endif %}
+
+    {% if comparison %}
+    <div class="sim-results">
+      <p class="sim-versions">Comparing <strong>{{ comparison.v1_status.version }}</strong>
+         with <strong>{{ comparison.v2_status.version }}</strong> on the same text.</p>
+      {% if not comparison.v1_status.complete or not comparison.v2_status.complete %}
+      <p class="note-block note-warn">One of these runs was incomplete; differences below
+         may be missing findings.</p>
+      {% endif %}
+
+      <h3>Rules changed</h3>
+      {% if comparison.rules_changed %}
+      <ul class="rule-change-list">
+        {% for change in comparison.rules_changed %}
+        <li>
+          <div class="finding-head">
+            <span class="rule-chip">{{ change.rule_id }}</span>
+            <span class="finding-kind">{{ change.kind|capitalize }}</span>
+          </div>
+          <p>{{ change.labels|join("; ") }}</p>
+          {% if change.old %}<p class="clause-line"><span class="label">Old clause</span> “{{ change.old.clause_text }}”</p>{% endif %}
+          {% if change.new %}<p class="clause-line"><span class="label">New clause</span> “{{ change.new.clause_text }}”</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No rule differences in the bundled versions.</p>
+      {% endif %}
+
+      <div class="sim-diff-grid">
+        <div>
+          <h3>New findings ({{ comparison.new|length }})</h3>
+          {% if comparison.new %}
+          <ul class="sim-list">
+            {% for item in comparison.new %}
+            <li><span class="rule-chip">{{ item.rule_id }}</span>
+              {% if item.finding.excerpt %}“{{ item.finding.excerpt }}”{% else %}Required phrase not found{% endif %}
+              <span class="sim-explain">{{ item.labels|join("; ") or "Difference could not be mapped to a rule change." }}</span></li>
+            {% endfor %}
+          </ul>
+          {% else %}<p>None.</p>{% endif %}
+        </div>
+        <div>
+          <h3>Resolved findings ({{ comparison.resolved|length }})</h3>
+          {% if comparison.resolved %}
+          <ul class="sim-list">
+            {% for item in comparison.resolved %}
+            <li><span class="rule-chip">{{ item.rule_id }}</span>
+              {% if item.finding.excerpt %}“{{ item.finding.excerpt }}”{% else %}Required phrase no longer required{% endif %}
+              <span class="sim-explain">{{ item.labels|join("; ") or "Difference could not be mapped to a rule change." }}</span></li>
+            {% endfor %}
+          </ul>
+          {% else %}<p>None.</p>{% endif %}
+        </div>
+        <div>
+          <h3>Unchanged findings ({{ comparison.unchanged|length }})</h3>
+          {% if comparison.unchanged %}
+          <ul class="sim-list">
+            {% for item in comparison.unchanged %}
+            <li><span class="rule-chip">{{ item.rule_id }}</span>
+              {% if item.new.excerpt %}“{{ item.new.excerpt }}”{% else %}Required phrase present in both versions{% endif %}</li>
+            {% endfor %}
+          </ul>
+          {% else %}<p>None.</p>{% endif %}
+        </div>
+        <div>
+          <h3>Details changed ({{ comparison.changed|length }})</h3>
+          {% if comparison.changed %}
+          <ul class="sim-list">
+            {% for item in comparison.changed %}
+            <li><span class="rule-chip">{{ item.rule_id }}</span>
+              {% if item.new.excerpt %}“{{ item.new.excerpt }}”{% else %}Required phrase finding{% endif %}
+              <span class="sim-explain">{{ item.labels|join("; ") or "Difference could not be mapped to a rule change." }}</span>
+              <span class="history-quote">Old: “{{ item.old.quote }}” · New: “{{ item.new.quote }}”</span></li>
+            {% endfor %}
+          </ul>
+          {% else %}<p>None.</p>{% endif %}
+        </div>
+      </div>
+
+      {% if comparison.unmapped_notes %}
+      <div class="note-block note-warn">
+        <p>Some differences could not be reliably mapped to a rule change:</p>
+        <ul>{% for note in comparison.unmapped_notes %}<li>{{ note }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

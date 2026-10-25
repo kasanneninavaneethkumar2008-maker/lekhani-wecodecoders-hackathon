@@ -1,0 +1,100 @@
+{% extends "site_base.html" %}
+{% block title %}Report an issue{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-intro">
+    <p class="eyebrow">Support</p>
+    <h1>Help us improve Lekhani.</h1>
+    <p class="page-lede">Tell us what happened and what you expected instead.</p>
+  </header>
+
+  <div class="report-grid">
+    <section class="form-card" aria-labelledby="report-heading">
+      <h2 id="report-heading">Report an issue</h2>
+      <p class="form-notice">This form is a preview. Issue submission is not connected yet.</p>
+
+      {% if issue_success %}
+      {% include "_issue_success.html" %}
+      {% endif %}
+
+      <form class="form" method="post" action="{{ url_for('site.report_issue') }}" novalidate data-preview-form>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="issue-category">Issue category</label>
+          <select class="input" id="issue-category" name="category" required data-issue-category>
+            <option value="">Choose a category…</option>
+            <option value="navigation">Page or navigation problem.</option>
+            <option value="incorrect-finding">Incorrect rule finding.</option>
+            <option value="missed-issue">Missed rule issue.</option>
+            <option value="accessibility">Accessibility problem.</option>
+            <option value="guest-entry">Guest-entry problem.</option>
+            <option value="privacy-security">Privacy or security concern.</option>
+            <option value="other">Other.</option>
+          </select>
+        </div>
+
+        <div class="conditional-warning" id="privacy-warning" hidden>
+          <p><strong>Privacy or security concern:</strong> Do not include passwords, tokens,
+             confidential content, or detailed exploit information here. Contact the team
+             privately.</p>
+        </div>
+
+        <div class="field">
+          <label for="issue-title">Short title</label>
+          <input class="input" type="text" id="issue-title" name="title" required>
+        </div>
+
+        <div class="field">
+          <label for="issue-page">Where did it happen?</label>
+          <select class="input" id="issue-page" name="page" required>
+            <option value="">Choose a page…</option>
+            <option value="guest-entry">Guest entry.</option>
+            <option value="home">Home.</option>
+            <option value="about">About.</option>
+            <option value="contact">Contact.</option>
+            <option value="workspace">Review workspace.</option>
+            <option value="other">Other.</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="issue-what">What happened?</label>
+          <textarea class="input" id="issue-what" name="what_happened" rows="5" required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="issue-steps">Steps to reproduce <span class="optional">(optional)</span></label>
+          <textarea class="input" id="issue-steps" name="steps" rows="4"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="issue-expected">Expected behaviour <span class="optional">(optional)</span></label>
+          <textarea class="input" id="issue-expected" name="expected" rows="4"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="issue-reply">Reply email <span class="optional">(optional)</span></label>
+          <input class="input" type="email" id="issue-reply" name="reply_email" autocomplete="email">
+        </div>
+
+        <button class="button button-primary" type="submit" disabled
+                aria-describedby="issue-disabled-reason">Submit issue <span aria-hidden="true">→</span></button>
+        <p class="form-reason" id="issue-disabled-reason">Submitting is disabled because issue
+           submission is not connected yet.</p>
+      </form>
+    </section>
+
+    <aside class="guidance" aria-labelledby="guidance-heading">
+      <h2 id="guidance-heading">Before submitting</h2>
+      <ul class="guidance-list">
+        <li>Describe the problem clearly.</li>
+        <li>Include steps we can follow.</li>
+        <li>Remove private or confidential information.</li>
+        <li>Do not include passwords or API keys.</li>
+      </ul>
+      <p class="guidance-help">Need general help?
+         <a href="{{ url_for('site.contact') }}">Contact us <span aria-hidden="true">→</span></a></p>
+    </aside>
+  </div>
+</div>
+{% endblock %}

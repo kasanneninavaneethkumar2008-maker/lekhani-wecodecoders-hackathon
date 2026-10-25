@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}{{ draft['title'] }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('creator.draft_list') }}">&larr; Back to my drafts</a>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Creator workspace</p>
+    <h1>{{ draft['title'] }}</h1>
+  </div>
+</div>
+
+<p class="meta">
+  <span class="status status-{{ draft['status'] }}">{{ draft['status'].replace('_', ' ') }}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>{{ draft['content_type'] }}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>Audience: {{ draft['audience'] }}</span>
+</p>
+<p class="meta meta-sub">Created {{ draft['created_at'] }} · Updated {{ draft['updated_at'] }}</p>
+
+<section class="panel" aria-labelledby="check-heading">
+  <h2 id="check-heading">Checks</h2>
+
+  {% if editable %}
+  <form method="post" action="{{ url_for('creator.draft_detail', draft_id=draft['id']) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="check">
+    <p><button type="submit" class="button button-primary">Run checks on the current text</button></p>
+  </form>
+  {% else %}
+  <p class="note">This draft is with the reviewer, so its text is read-only for now.</p>
+  {% endif %}
+
+  {% if latest_check %}
+  <p class="check-meta">Latest check: {{ latest_check['created_at'] }}
+     {% if latest_check['body_snapshot'] != draft['body'] %}
+     <strong>(on earlier text — run the checks again after revising)</strong>
+     {% endif %}
+  </p>
+
+  {% if issues %}
+  <p class="lead">{{ issues|length }} issue(s) found. Each issue cites an approved rule
+     by its stable rule ID and quotes the approved clause exactly.</p>
+  <ul class="issue-list">
+    {% for issue in issues %}
+    <li class="issue">
+      <p class="issue-head">
+        <span class="rule-id">{{ issue['rule_id'] }}</span>
+        <span class="kind kind-{{ issue['kind'] }}">{{ issue['kind'] }}</span>
+        {% if issue['is_prompt'] %}<span class="prompt-badge">prompt for human review</span>{% endif %}
+      </p>
+      <p>{{ issue['message'] }}</p>
+      {% if issue['excerpt'] %}
+      <p class="excerpt">Matched text: <q>{{ issue['excerpt'] }}</q></p>
+      {% endif %}
+      <blockquote class="clause" cite="approved rule {{ issue['rule_id'] }}">
+        <p>{{ issue['clause_quote'] }}</p>
+      </blockquote>
+      {% if issue['is_prompt'] %}
+      <p class="note">This is a prompt for a human to review the wording — it is not a
+         statement about whether the claim is true or lawful.</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% elif latest_check %}
+  <p class="note">No issues found in the checked text.</p>
+  {% endif %}
+
+  {% if history %}
+  <details>
+    <summary>Earlier checks ({{ history|length }})</summary>
+    <ul>
+      {% for run in history %}
+      <li>Check #{{ run['id'] }} at {{ run['created_at'] }} — {{ run['issue_count'] }} issue(s)</li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% endif %}
+
+  {% else %}
+  <p class="note">No checks have been run on this draft yet.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="revise-heading">
+  <h2 id="revise-heading">Revise</h2>
+  {% if editable %}
+  <form method="post" action="{{ url_for('creator.draft_detail', draft_id=draft['id']) }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="revise">
+    <div class="form-grid">
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required value="{{ draft['title'] }}"
+               {% if errors.get('title') %}aria-describedby="title-error"{% endif %}>
+        {% if errors.get('title') %}<span class="field-error" id="title-error">{{ errors['title'] }}</span>{% endif %}
+      </div>
+
+      <div class="field">
+        <label for="content_type">Content type</label>
+        <select id="content_type" name="content_type" required
+                {% if errors.get('content_type') %}aria-describedby="content_type-error"{% endif %}>
+          {% for ct in content_types %}
+          <option value="{{ ct }}" {% if draft['content_type'] == ct %}selected{% endif %}>{{ ct }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.get('content_type') %}<span class="field-error" id="content_type-error">{{ errors['content_type'] }}</span>{% endif %}
+      </div>
+
+      <div class="field field-span">
+        <label for="audience">Intended audience</label>
+        <input type="text" id="audience" name="audience" required value="{{ draft['audience'] }}"
+               {% if errors.get('audience') %}aria-describedby="audience-error"{% endif %}>
+        {% if errors.get('audience') %}<span class="field-error" id="audience-error">{{ errors['audience'] }}</span>{% endif %}
+      </div>
+
+      <div class="field field-span">
+        <label for="body">Draft text</label>
+        <textarea id="body" name="body" rows="14" required
+                  {% if errors.get('body') %}aria-describedby="body-error"{% endif %}>{{ draft['body'] }}</textarea>
+        {% if errors.get('body') %}<span class="field-error" id="body-error">{{ errors['body'] }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="button">Save revision</button>
+    </div>
+  </form>
+
+  <hr class="panel-divider">
+
+  <form method="post" action="{{ url_for('creator.draft_detail', draft_id=draft['id']) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="submit">
+    <div class="form-actions">
+      <button type="submit" class="button button-primary">Send for review</button>
+      <span class="field-hint">Locks the text while the reviewer decides.</span>
+    </div>
+  </form>
+  {% else %}
+  <p class="note">Editing is available again if the reviewer requests changes.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="decisions-heading">
+  <h2 id="decisions-heading">Reviewer decisions</h2>
+  {% if decisions %}
+  <ol class="decision-list">
+    {% for d in decisions %}
+    <li>
+      <strong>{{ 'Approved' if d['decision'] == 'approved' else 'Needs changes' }}</strong>
+      by {{ d['display_name'] }} at {{ d['created_at'] }}
+      {% if d['comment'] %}<br><em>Comment:</em> {{ d['comment'] }}{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="note">No decisions recorded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }}{% endblock %}
+{% block content %}
+<section class="panel guest-gate" aria-labelledby="gate-title">
+  <p class="eyebrow">Guest · {{ role }}</p>
+  <h1 id="gate-title">{{ heading }}</h1>
+  {% for p in paragraphs %}
+  <p class="lead">{{ p }}</p>
+  {% endfor %}
+
+  <p class="notice">Google sign-in isn't connected yet. Until it is, guest
+     sessions can look around but can't create, save, or change anything — and
+     no guest data is ever stored.</p>
+
+  <p class="page-actions">
+    <a class="button button-primary" href="{{ url_for('guest.home') }}">Back to guest home</a>
+    <button type="button" class="button welcome-soon" disabled aria-disabled="true"
+            title="Coming soon">Google sign-in — Coming soon</button>
+  </p>
+</section>
+{% endblock %}

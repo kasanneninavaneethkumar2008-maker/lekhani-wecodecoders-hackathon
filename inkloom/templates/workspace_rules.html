@@ -1,0 +1,27 @@
+{% extends "site_base.html" %}
+{% block title %}Rules{% endblock %}
+{% block content %}
+<div class="page ws-rules-page">
+  <header class="page-intro">
+    <p class="eyebrow">{{ rule_set_name }}</p>
+    <h1>Read-only rule set</h1>
+    <p class="page-lede">These are the exact rules the workspace checks against. They are
+       fictional demo guidelines and are not an organisation-approved policy.</p>
+    <p class="ws-meta-line"><span class="ws-mono">{{ active_rule_set.id }} · {{ active_rule_set.version }}</span>
+       · {{ rule_set_detail }} · Rules are read-only here; rule simulation lives in the Trust Lab.</p>
+    {% if sample_mode %}
+    <p class="ws-warn">This is the bundled fictional sample rule set. It is active only
+       because the sample was explicitly loaded, and it is not an approved policy.</p>
+    {% endif %}
+  </header>
+
+  <div class="rule-list">
+    {% include "workspace/_rules_list.html" %}
+  </div>
+
+  <p class="ws-page-actions">
+    <a class="button button-secondary" href="{{ url_for('site.workspace') }}">Back to workspace</a>
+    <a class="button button-ghost" href="{{ url_for('site.trust_lab') }}">Open Trust Lab</a>
+  </p>
+</div>
+{% endblock %}

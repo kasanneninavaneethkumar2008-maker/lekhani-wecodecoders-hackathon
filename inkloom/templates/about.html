@@ -1,0 +1,159 @@
+{% extends "site_base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-intro">
+    <p class="eyebrow">About</p>
+    <h1>The thinking behind Lekhani.</h1>
+    <p class="page-lede">A review workspace that connects content findings to approved
+       brand rules—and keeps decisions human.</p>
+  </header>
+
+  <section class="why" aria-labelledby="why-heading">
+    <h2 class="visually-hidden" id="why-heading">Why Lekhani</h2>
+    <div class="why-grid">
+      <article class="info-card">
+        <h3>Why we built it</h3>
+        <p>Content can move faster than review. Brand rules are often separated from
+           the draft, making feedback difficult to understand and repeat mistakes easy
+           to miss.</p>
+      </article>
+      <article class="info-card">
+        <h3>What makes it different</h3>
+        <p>Lekhani is designed to connect each finding to a rule identifier and its
+           exact approved clause, so a reviewer can inspect the reason rather than
+           accept an unexplained warning.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="name-panel" aria-labelledby="name-heading">
+    <p class="eyebrow">The name</p>
+    <h2 id="name-heading">Why Lekhani?</h2>
+    <p class="name-text">Lekhani—<span lang="sa">लेखनी</span>—is a Sanskrit word for a pen or
+       writing instrument. We chose it to connect a writing-inspired Indian identity
+       with careful, responsible digital communication.</p>
+    <p class="name-line">Rooted in language. Guided by evidence.</p>
+  </section>
+
+  <section class="flow-section" id="how-lekhani-works" aria-labelledby="flow-heading">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Process</p>
+        <h2 id="flow-heading">How Lekhani works</h2>
+      </div>
+    </div>
+
+    <ol class="flow" data-flow>
+      <li class="flow-item">
+        <button class="flow-node" type="button" data-flow-node data-title="Write"
+                data-desc="Enter draft content and its intended context."
+                aria-controls="flow-detail" aria-pressed="true">
+          <span class="flow-num" aria-hidden="true">1</span>
+          <span class="flow-title">Write</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+      <li class="flow-item">
+        <button class="flow-node" type="button" data-flow-node data-title="Check"
+                data-desc="Compare the draft with configured brand rules."
+                aria-controls="flow-detail" aria-pressed="false">
+          <span class="flow-num" aria-hidden="true">2</span>
+          <span class="flow-title">Check</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+      <li class="flow-item">
+        <button class="flow-node" type="button" data-flow-node data-title="Inspect"
+                data-desc="View the affected text and exact cited clause."
+                aria-controls="flow-detail" aria-pressed="false">
+          <span class="flow-num" aria-hidden="true">3</span>
+          <span class="flow-title">Inspect</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+      <li class="flow-item">
+        <button class="flow-node" type="button" data-flow-node data-title="Revise"
+                data-desc="Edit the draft and run checks again."
+                aria-controls="flow-detail" aria-pressed="false">
+          <span class="flow-num" aria-hidden="true">4</span>
+          <span class="flow-title">Revise</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+      <li class="flow-item">
+        <button class="flow-node" type="button" data-flow-node data-title="Human review"
+                data-desc="An authorised reviewer records a decision."
+                aria-controls="flow-detail" aria-pressed="false">
+          <span class="flow-num" aria-hidden="true">5</span>
+          <span class="flow-title">Human review</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+    </ol>
+
+    <div class="flow-detail" id="flow-detail" aria-live="polite">
+      <p class="flow-detail-step">Step <span data-flow-detail-step>1</span> · <span data-flow-detail-title>Write</span></p>
+      <p class="flow-detail-text" data-flow-detail-text>Enter draft content and its intended context.</p>
+    </div>
+
+    <p class="flow-loop"><span class="flow-loop-icon" aria-hidden="true">↺</span>
+       Human review → Needs changes → Revise</p>
+    <p class="flow-outside">Publication happens outside Lekhani.</p>
+
+    <noscript>
+      <ul class="flow-static">
+        <li><strong>Write:</strong> Enter draft content and its intended context.</li>
+        <li><strong>Check:</strong> Compare the draft with configured brand rules.</li>
+        <li><strong>Inspect:</strong> View the affected text and exact cited clause.</li>
+        <li><strong>Revise:</strong> Edit the draft and run checks again.</li>
+        <li><strong>Human review:</strong> An authorised reviewer records a decision.</li>
+      </ul>
+    </noscript>
+  </section>
+
+  <section class="privacy" aria-labelledby="privacy-heading">
+    <p class="eyebrow">Trust</p>
+    <h2 id="privacy-heading">Privacy, protection, and honest limits.</h2>
+    <div class="privacy-grid">
+      <article class="info-card">
+        <h3>Human control</h3>
+        <p>The review workflow is designed to support a person’s decision. Lekhani does
+           not automatically publish content.</p>
+      </article>
+      <article class="info-card">
+        <h3>Rule validation</h3>
+        <p>The checker validates rule identifiers and quoted clauses against the
+           approved rule table before presenting findings.</p>
+      </article>
+      <article class="info-card">
+        <h3>Demo privacy</h3>
+        <p>Use fictional or non-confidential content while exploring the guest demo.</p>
+      </article>
+      <article class="info-card">
+        <h3>Current limits</h3>
+        <p>Guest names are not verified identities. Account permissions and permanent
+           storage are not connected in this stage.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="team" aria-labelledby="team-heading">
+    <div class="team-credit">
+      <span class="team-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M12 2.6 17 9.5 14.6 19 12 21.4 9.4 19 7 9.5Z" fill="currentColor"/>
+          <circle cx="12" cy="13.4" r="1.7" fill="#ffffff"/>
+          <path d="M12 15.1V21.3" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <h2 id="team-heading">Built by Team Lekhani</h2>
+    </div>
+  </section>
+
+  <section class="cta-panel" aria-labelledby="cta-heading">
+    <h2 id="cta-heading">Ready to begin?</h2>
+    <p><a class="button button-primary" href="{{ url_for('site.workspace') }}">Start a review <span aria-hidden="true">→</span></a></p>
+  </section>
+</div>
+{% endblock %}

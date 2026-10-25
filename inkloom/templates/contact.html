@@ -1,0 +1,59 @@
+{% extends "site_base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-intro">
+    <p class="eyebrow">Contact</p>
+    <h1>Let’s hear from you.</h1>
+    <p class="page-lede">Questions, feedback, or collaboration ideas? Contact the team.</p>
+  </header>
+
+  <div class="contact-layout">
+    <section class="form-card" aria-labelledby="enquiry-heading">
+      <h2 id="enquiry-heading">Send an enquiry</h2>
+      <p class="form-notice">This form is a preview. Message delivery is not connected yet.</p>
+
+      <form class="form" method="post" action="{{ url_for('site.contact') }}" novalidate data-preview-form>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="contact-name">Your name</label>
+          <input class="input" type="text" id="contact-name" name="name" required
+                 autocomplete="name" value="{{ session.get('guest_name') }}">
+        </div>
+
+        <div class="field">
+          <label for="contact-email">Email address</label>
+          <input class="input" type="email" id="contact-email" name="email" required
+                 autocomplete="email">
+        </div>
+
+        <div class="field">
+          <label for="contact-topic">Topic</label>
+          <select class="input" id="contact-topic" name="topic" required>
+            <option value="">Choose a topic…</option>
+            <option value="general">General question.</option>
+            <option value="feedback">Feedback.</option>
+            <option value="collaboration">Collaboration.</option>
+            <option value="other">Other.</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="contact-message">Message</label>
+          <textarea class="input" id="contact-message" name="message" rows="6" required></textarea>
+        </div>
+
+        <p class="privacy-note">Please do not include passwords, API keys, or confidential drafts.</p>
+
+        <button class="button button-primary" type="submit" disabled
+                aria-describedby="contact-disabled-reason">Send enquiry <span aria-hidden="true">→</span></button>
+        <p class="form-reason" id="contact-disabled-reason">Sending is disabled because message
+           delivery is not connected yet.</p>
+      </form>
+    </section>
+
+    <p class="found-problem">Found a problem?
+       <a href="{{ url_for('site.report_issue') }}">Report an issue <span aria-hidden="true">→</span></a></p>
+  </div>
+</div>
+{% endblock %}

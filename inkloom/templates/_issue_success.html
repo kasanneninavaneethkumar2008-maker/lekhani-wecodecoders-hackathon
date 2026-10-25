@@ -1,0 +1,11 @@
+{# Prepared for the future issue-submission service. Only render this after a
+   genuine backend success response has produced a server-side reference.
+   It is intentionally not used in this build. #}
+<section class="success-card" aria-labelledby="issue-success-heading">
+  <h2 id="issue-success-heading">Issue received.</h2>
+  <p>Reference: <span class="success-ref">{{ reference }}</span></p>
+  <p class="success-actions">
+    <a class="button button-primary" href="{{ url_for('site.home') }}">Back to Home</a>
+    <a class="button button-secondary" href="{{ url_for('site.report_issue') }}">Submit another issue</a>
+  </p>
+</section>

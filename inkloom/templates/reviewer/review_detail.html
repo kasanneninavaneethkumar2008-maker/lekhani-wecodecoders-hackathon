@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Review: {{ draft['title'] }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('reviewer.queue') }}">&larr; Back to the queue</a>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Reviewer workspace</p>
+    <h1>{{ draft['title'] }}</h1>
+  </div>
+</div>
+
+<p class="meta">
+  <span class="status status-{{ draft['status'] }}">{{ draft['status'].replace('_', ' ') }}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>by {{ draft['author_name'] }}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>{{ draft['content_type'] }}</span>
+</p>
+<p class="meta meta-sub">Audience: {{ draft['audience'] }} · Last updated {{ draft['updated_at'] }}</p>
+
+<section class="panel" aria-labelledby="text-heading">
+  <h2 id="text-heading">Draft text</h2>
+  <div class="draft-body">{{ draft['body'] }}</div>
+</section>
+
+<section class="panel" aria-labelledby="issues-heading">
+  <h2 id="issues-heading">Latest check results</h2>
+  {% if latest_check %}
+  <p class="check-meta">Checked {{ latest_check['created_at'] }} (text snapshot from that run).</p>
+  {% if issues %}
+  <p class="lead">Each issue cites an approved rule by its stable rule ID and quotes the
+     approved clause exactly. Anything that could not be validated against the rule table
+     is discarded and never shown.</p>
+  <ul class="issue-list">
+    {% for issue in issues %}
+    <li class="issue">
+      <p class="issue-head">
+        <span class="rule-id">{{ issue['rule_id'] }}</span>
+        <span class="kind kind-{{ issue['kind'] }}">{{ issue['kind'] }}</span>
+        {% if issue['is_prompt'] %}<span class="prompt-badge">prompt for human review</span>{% endif %}
+      </p>
+      <p>{{ issue['message'] }}</p>
+      {% if issue['excerpt'] %}
+      <p class="excerpt">Matched text: <q>{{ issue['excerpt'] }}</q></p>
+      {% endif %}
+      <blockquote class="clause" cite="approved rule {{ issue['rule_id'] }}">
+        <p>{{ issue['clause_quote'] }}</p>
+      </blockquote>
+      {% if issue['is_prompt'] %}
+      <p class="note">Prompt only: this flags wording for a human to consider. It says
+         nothing about whether the claim is true or lawful.</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="note">The last check found no issues.</p>
+  {% endif %}
+  {% else %}
+  <p class="note">The creator has not run checks on this draft yet.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="decision-heading">
+  <h2 id="decision-heading">Record a decision</h2>
+  {% if can_decide %}
+  <form method="post" action="{{ url_for('reviewer.review_draft', draft_id=draft['id']) }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <fieldset>
+      <legend>Decision</legend>
+      <p class="radio-row">
+        <input type="radio" id="decision-approved" name="decision" value="approved" required>
+        <label for="decision-approved">Approved</label>
+      </p>
+      <p class="radio-row">
+        <input type="radio" id="decision-changes" name="decision" value="needs_changes" required>
+        <label for="decision-changes">Needs changes</label>
+      </p>
+    </fieldset>
+    <div class="field">
+      <label for="comment">Comment (optional)</label>
+      <textarea id="comment" name="comment" rows="4">{{ request.form.get('comment', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="button button-primary">Record decision</button>
+    </div>
+  </form>
+  <p class="note">Decisions are recorded by a person. The system never approves a draft
+     automatically and nothing is published.</p>
+  {% else %}
+  <p class="note">This draft is not awaiting a decision.</p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="history-heading">
+  <h2 id="history-heading">Decision history</h2>
+  {% if decisions %}
+  <ol class="decision-list">
+    {% for d in decisions %}
+    <li>
+      <strong>{{ decision_labels[d['decision']] }}</strong> by {{ d['reviewer_name'] }}
+      at {{ d['created_at'] }}
+      {% if d['comment'] %}<br><em>Comment:</em> {{ d['comment'] }}{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="note">No decisions recorded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

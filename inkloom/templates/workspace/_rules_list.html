@@ -1,0 +1,20 @@
+{% for view in rule_views %}
+<article class="rule-item" id="rule-{{ view.rule.rule_id }}"
+         data-rule-item data-rule-id="{{ view.rule.rule_id }}"
+         data-category="{{ view.category }}"
+         data-search="{{ view.search_text }}" tabindex="-1">
+  <div class="rule-item-head">
+    <span class="rule-chip">{{ view.rule.rule_id }}</span>
+    <span class="rule-cat">{{ view.category_label }}</span>
+    {% if not view.rule.active %}<span class="rule-cat">Inactive</span>{% endif %}
+  </div>
+  <h3>{{ view.title }}</h3>
+  <p class="rule-meta"><span class="ws-label">Applies to</span> {{ view.applies_to_label }}</p>
+  <blockquote class="rule-clause">{{ view.rule.clause_text }}</blockquote>
+  <p class="rule-meta"><span class="ws-label">Matching</span> {{ view.matching }}</p>
+  <p class="rule-meta"><span class="ws-label">Source reference</span> None supplied
+     (fictional demo guideline).</p>
+</article>
+{% else %}
+<p class="ws-empty">No active rules are loaded in this build.</p>
+{% endfor %}

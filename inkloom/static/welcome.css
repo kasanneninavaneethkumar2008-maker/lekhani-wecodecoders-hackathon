@@ -1,0 +1,475 @@
+/* Lekhani welcome page.
+   Loaded only by the welcome page; every other page in the app stays
+   deliberately unstyled. Colours: vivid indigo / cobalt, soft lavender,
+   white, and a restrained dark ink accent. No external fonts or images, so
+   the page still works offline and if any asset fails to load. */
+
+:root {
+  --ink: #14142b;
+  --ink-soft: #403e5c;
+  --muted: #5a5875;
+  --indigo: #3b34d6;
+  --indigo-deep: #241f8f;
+  --cobalt: #1e3fd0;
+  --lavender: #ece9ff;
+  --lavender-line: #ddd6fb;
+  --lavender-soft: #f6f4ff;
+  --white: #ffffff;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --devanagari: "Nirmala UI", "Noto Sans Devanagari", "Mangal", "Kohinoor Devanagari", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--white);
+  overflow-x: hidden;
+}
+
+.page-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ---- header / footer (welcome page only) --------------------------------- */
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 10;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--white);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.skip-link:focus { top: 12px; }
+
+.site-header {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 1.15rem clamp(18px, 4vw, 56px) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.brand { margin: 0; }
+
+.brand a {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand a:hover,
+.brand a:focus-visible { color: var(--indigo); }
+
+.site-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.site-nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--indigo);
+  border-bottom-color: var(--indigo);
+}
+.site-nav a[aria-current="page"] {
+  color: var(--indigo);
+  font-weight: 600;
+}
+.nav-user { color: var(--muted); }
+
+.site-footer {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 1.2rem clamp(18px, 4vw, 56px) 1.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---- welcome page -------------------------------------------------------- */
+
+.lek-welcome {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 4vw, 56px) clamp(18px, 4vw, 56px) clamp(36px, 6vw, 72px);
+  overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 8% 10%, rgba(236, 233, 255, 0.9), transparent 70%),
+    radial-gradient(50% 45% at 96% 92%, rgba(214, 224, 255, 0.75), transparent 72%),
+    var(--white);
+}
+
+/* Fine paper-like grain: a tiny CSS dot pattern, no image request. */
+.lek-welcome::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(20, 20, 43, 0.05) 0.6px, transparent 0.7px);
+  background-size: 3px 3px;
+  opacity: 0.45;
+}
+
+.lek-glow {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+}
+.lek-glow-a {
+  width: min(560px, 70vw);
+  height: min(560px, 70vw);
+  top: -180px;
+  left: -160px;
+  background: radial-gradient(closest-side, rgba(93, 82, 255, 0.18), transparent);
+}
+.lek-glow-b {
+  width: min(520px, 70vw);
+  height: min(520px, 70vw);
+  right: -170px;
+  bottom: -190px;
+  background: radial-gradient(closest-side, rgba(30, 63, 208, 0.14), transparent);
+}
+
+.lek-layout {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 76px);
+}
+
+/* Left column: brand story */
+
+.lek-story { min-width: 0; }
+
+.lek-wordmark {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0 0 clamp(14px, 2vw, 22px);
+}
+
+.lek-wordmark-name {
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 2.4vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.lek-wordmark-script {
+  font-family: var(--devanagari);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  color: var(--indigo);
+  opacity: 0.85;
+}
+
+.lek-headline {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.1rem, 4.4vw, 3.45rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.lek-description {
+  margin: clamp(16px, 2.4vw, 24px) 0 0;
+  max-width: 36ch;
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.lek-supporting {
+  margin: clamp(18px, 2.6vw, 26px) 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--indigo-deep);
+}
+
+.lek-stroke {
+  display: block;
+  width: clamp(170px, 26vw, 230px);
+  height: auto;
+  margin-top: 0.55rem;
+  color: rgba(59, 52, 214, 0.45);
+  overflow: visible;
+}
+.lek-stroke path {
+  stroke-dasharray: 360;
+  stroke-dashoffset: 360;
+  animation: lek-draw 1.5s ease-out 0.25s forwards;
+}
+@keyframes lek-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Right column: guest entry card */
+
+.lek-card {
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--lavender-line);
+  border-radius: 24px;
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: 0 30px 70px -38px rgba(36, 31, 143, 0.45);
+}
+
+.lek-card-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(1.35rem, 2.2vw, 1.6rem);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.lek-card-note {
+  margin: 0.55rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.lek-field { margin-top: clamp(18px, 2.4vw, 24px); }
+
+.lek-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.lek-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--lavender-soft);
+  border: 1.5px solid #cfc8f0;
+  border-radius: 12px;
+}
+.lek-input::placeholder { color: #6f6c8f; opacity: 1; }
+.lek-input:hover { border-color: #b3a9ea; }
+.lek-input:focus {
+  outline: 3px solid rgba(59, 52, 214, 0.3);
+  outline-offset: 1px;
+  border-color: var(--indigo);
+  background: var(--white);
+}
+
+.lek-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.lek-error {
+  margin: 0.45rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b42318;
+}
+
+/* Slide-to-enter control */
+
+.lek-slide { margin-top: 1.1rem; }
+
+.lek-track {
+  position: relative;
+  height: 60px;
+  border-radius: 999px;
+  background: #f0edff;
+  border: 1px solid var(--lavender-line);
+  overflow: hidden;
+}
+
+.lek-trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(59, 52, 214, 0.35), rgba(106, 92, 255, 0.18));
+  pointer-events: none;
+}
+
+.lek-slide-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #4b4780;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.lek-handle {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #4a41e6, #2f27b0);
+  color: var(--white);
+  box-shadow: 0 8px 18px -8px rgba(36, 31, 143, 0.7);
+  cursor: grab;
+  touch-action: none;
+  transition: transform 0.22s ease;
+  will-change: transform;
+}
+.lek-handle:active { cursor: grabbing; }
+.lek-handle:focus-visible {
+  outline: 3px solid #8e86ff;
+  outline-offset: 3px;
+}
+.lek-handle[aria-disabled="true"] { opacity: 0.85; cursor: default; }
+
+.lek-nib { width: 22px; height: 22px; }
+.lek-nib-body { fill: var(--white); }
+.lek-nib-vent { fill: #2f27b0; }
+.lek-nib-slit {
+  stroke: #2f27b0;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.lek-help {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.lek-status {
+  margin: 0.9rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--indigo-deep);
+}
+.lek-status:empty { display: none; }
+
+.lek-alt {
+  width: 100%;
+  margin-top: 1.15rem;
+  padding: 0.82rem 1rem;
+  font: inherit;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--indigo-deep);
+  background: var(--white);
+  border: 1.5px solid var(--indigo);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.lek-alt:hover { background: #f2efff; }
+.lek-alt:focus-visible {
+  outline: 3px solid rgba(59, 52, 214, 0.35);
+  outline-offset: 2px;
+}
+.lek-alt:disabled { opacity: 0.55; cursor: default; }
+
+.lek-note {
+  margin: 0.8rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ---- responsive ---------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .lek-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(26px, 5vw, 40px);
+    align-items: start;
+  }
+  .lek-card { max-width: 560px; }
+  .lek-description { max-width: 46ch; }
+}
+
+@media (max-width: 480px) {
+  .site-header { padding-top: 0.9rem; }
+  .site-nav ul { gap: 0.8rem; font-size: 0.88rem; }
+  .lek-welcome { padding-left: 16px; padding-right: 16px; }
+  .lek-wordmark { gap: 0.5rem; }
+  .lek-input { font-size: 16px; } /* avoid iOS zoom on focus */
+  .lek-track { height: 58px; }
+  .lek-handle { width: 50px; height: 50px; }
+}
+
+/* ---- reduced motion ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .lek-stroke path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .lek-handle,
+  .lek-slide-text,
+  .lek-alt { transition: none; }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
